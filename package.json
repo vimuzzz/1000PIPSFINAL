@@ -1,7 +1,7 @@
 {
-  "name": "1000pips-final-clean",
+  "name": "1000pips-payment-vip-upgrade",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
