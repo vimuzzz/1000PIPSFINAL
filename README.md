@@ -1,20 +1,7 @@
-# 1000PIPS Payment VIP Upgrade
+# 1000PIPS Connected Frontend
 
-Clean Vite React project.
-
-## Included
-- PayPal email: vimu1113@gmail.com
-- Skrill email: vimu1113@gmail.com
-- Binance Pay ID: 41356322
-- Login/Register frontend demo
-- VIP protected page demo
-- Admin dashboard demo
-- Payment proof submission demo
-- Telegram signal posting demo
-
-## Demo Admin Login
-Email: admin@1000pips.com
-Password: admin123
+Connected backend:
+https://one000pips-backend.onrender.com
 
 ## Vercel Settings
 Framework Preset: Vite
