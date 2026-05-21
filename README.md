@@ -1,1 +1,1 @@
-Custom Pips Input frontend upgrade. Upload these files to frontend repo only.
+Archive + Daily Market Analysis Blog frontend. Upload this folder contents to frontend repo, then push origin.
