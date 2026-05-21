@@ -1,128 +1,21 @@
-
-import React, { useEffect, useState } from 'react'
-import ReactDOM from 'react-dom/client'
-import './style.css'
-
-const API_URL = 'https://one000pips-backend.onrender.com'
-const PAYPAL_EMAIL = 'vimu1113@gmail.com'
-const SKRILL_EMAIL = 'vimu1113@gmail.com'
-const BINANCE_PAY_ID = '41356322'
-const TELEGRAM_FREE = 'https://t.me/ForexHubbSignals'
-
-function getToken(){ return localStorage.getItem('token') }
-
-async function api(path, options = {}) {
-  const isForm = options.body instanceof FormData
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      ...(isForm ? {} : {'Content-Type':'application/json'}),
-      ...(getToken() ? {Authorization:`Bearer ${getToken()}`} : {}),
-      ...(options.headers || {})
-    }
-  })
-  const data = await res.json().catch(()=>({}))
-  if(!res.ok) throw new Error(data.message || 'Request failed')
-  return data
-}
-
-function App(){
-  const [page,setPage]=useState('home')
-  const [user,setUser]=useState(null)
-  useEffect(()=>{ const u=localStorage.getItem('user'); if(u) setUser(JSON.parse(u)) },[])
-  function saveSession(token,userData){ localStorage.setItem('token',token); localStorage.setItem('user',JSON.stringify(userData)); setUser(userData) }
-  function logout(){ localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); setPage('home') }
-  return <div>
-    <nav className="nav">
-      <button className="brand" onClick={()=>setPage('home')}><img src="/logo.jpg"/><span>1000PIPS</span></button>
-      <div className="navLinks">
-        <button onClick={()=>setPage('home')}>Home</button>
-        <button onClick={()=>setPage('plans')}>VIP Plans</button>
-        <button onClick={()=>setPage('payment')}>Payment</button>
-        <button onClick={()=>setPage('vip')}>VIP Area</button>
-        <button onClick={()=>setPage('admin')}>Admin</button>
-        {user ? <button onClick={logout}>Logout</button> : <button onClick={()=>setPage('login')}>Login</button>}
-      </div>
-    </nav>
-    {page==='home' && <Home setPage={setPage}/>}
-    {page==='plans' && <Plans setPage={setPage}/>}
-    {page==='login' && <Login saveSession={saveSession} setPage={setPage}/>}
-    {page==='payment' && <Payment user={user} setUser={setUser} setPage={setPage}/>}
-    {page==='vip' && <Vip user={user} setPage={setPage}/>}
-    {page==='admin' && <Admin user={user} setPage={setPage}/>}
-    <Footer/>
-  </div>
-}
-
-function Home({setPage}){
-  return <>
-    <header className="hero">
-      <div className="heroBox">
-        <img src="/logo.jpg" className="heroLogo"/>
-        <p className="green">PREMIUM FOREX SIGNALS</p>
-        <h1>Trade With 1000PIPS VIP Signals</h1>
-        <p className="sub">Professional Forex, Gold, Crypto and Indices signals with clear entry, stop loss, take profit and market analysis.</p>
-        <div className="actions"><button onClick={()=>setPage('plans')}>View VIP Plans</button><a href={TELEGRAM_FREE} target="_blank">Free Telegram Channel</a></div>
-      </div>
-    </header>
-    <section className="section">
-      <p className="green">WHY JOIN</p><h2>Built For Serious Traders</h2>
-      <div className="grid"><div><h3>Daily Market Analysis</h3><p>Gold, forex and indices breakdowns.</p></div><div><h3>VIP Signals</h3><p>Clear trade ideas with SL and TP levels.</p></div><div><h3>Monthly Reports</h3><p>Track trading performance professionally.</p></div></div>
-    </section>
-  </>
-}
-
-function Plans({setPage}){
-  const plans=[['1 Month VIP','$45','Best for testing our service.'],['3 Months VIP','$100','Most popular value package.'],['Lifetime VIP','$400','One-time payment, lifetime access.']]
-  return <section className="section"><p className="green">VIP MEMBERSHIP</p><h2>Choose Your Plan</h2><div className="cards">{plans.map(([n,p,t],i)=><div className={i===1?'card popular':'card'} key={n}>{i===1 && <span className="tag">MOST POPULAR</span>}<h3>{n}</h3><h4>{p}</h4><p>{t}</p><button onClick={()=>setPage('payment')}>Join Now</button></div>)}</div></section>
-}
-
-function Login({saveSession,setPage}){
-  const [mode,setMode]=useState('login'),[form,setForm]=useState({name:'',email:'',password:''}),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false)
-  async function submit(e){ e.preventDefault(); setMsg(''); setLoading(true); try{
-    const path=mode==='login'?'/api/auth/login':'/api/auth/register'
-    const payload=mode==='login'?{email:form.email,password:form.password}:{name:form.name,email:form.email,password:form.password}
-    const data=await api(path,{method:'POST',body:JSON.stringify(payload)})
-    saveSession(data.token,data.user); setPage(data.user.role==='admin'?'admin':'payment')
-  }catch(err){setMsg(err.message)} finally{setLoading(false)}}
-  return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2>
-    <form className="form" onSubmit={submit}>{mode==='register' && <input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg && <p className="error">{msg}</p>}<p className="switch">{mode==='login'?'No account?':'Already have account?'}<button type="button" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?' Register here':' Login here'}</button></p></form>
-  </section>
-}
-
-function Payment({user,setUser,setPage}){
-  const [plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false)
-  function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') }
-  async function submit(e){ e.preventDefault(); setMsg(''); if(!user){setPage('login'); return}
-    const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(screenshot) fd.append('screenshot',screenshot)
-    setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){setMsg(err.message)} finally{setLoading(false)}
-  }
-  return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div>
-    <form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Optional note" value={note} onChange={e=>setNote(e.target.value)}/><label className="upload">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview && <img src={preview} className="preview"/>}<button disabled={loading}>{loading?'Submitting...':user?'Submit Proof':'Login/Register First'}</button>{msg && <p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form>
-  </section>
-}
-
-function Vip({user,setPage}){
-  const [signals,setSignals]=useState([]),[msg,setMsg]=useState('')
-  useEffect(()=>{async function load(){if(!user)return; try{setSignals(await api('/api/vip/signals'))}catch(e){setMsg(e.message)}} load()},[user])
-  if(!user)return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>
-  if(!user.vip && user.role!=='admin')return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Waiting For Admin Approval</h2><p>Status: {user.status}</p></section>
-  return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals</h2>{msg&&<p className="error">{msg}</p>}<div className="signals">{signals.length===0&&<p>No signals posted yet.</p>}{signals.map(s=><div key={s._id} className="signal"><h3>{s.title}</h3><pre>{s.message}</pre></div>)}</div></section>
-}
-
-function Admin({user,setPage}){
-  const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\\nEntry: 3350\\nSL: 3340\\nTP1: 3370\\nTP2: 3385',sendTelegram:true})
-  async function loadAdmin(){setMsg(''); try{const [u,p]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments')]); setUsers(u); setPayments(p); setMsg('Admin data refreshed.')}catch(e){setMsg(e.message)}}
-  useEffect(()=>{if(user?.role==='admin')loadAdmin()},[user])
-  if(!user)return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
-  if(user.role!=='admin')return <section className="section narrow"><h2>Admin Access Required</h2></section>
-  async function approve(id){await api(`/api/admin/payments/${id}/approve`,{method:'PUT'}); await loadAdmin()}
-  async function viewShot(id){try{const d=await api(`/api/admin/payments/${id}/screenshot`); setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`)}catch(e){setMsg(e.message)}}
-  async function removeVip(id){await api(`/api/admin/users/${id}/remove-vip`,{method:'PUT'}); await loadAdmin()}
-  async function postSignal(e){e.preventDefault(); try{await api('/api/admin/signals',{method:'POST',body:JSON.stringify(signal)}); setMsg('Signal posted successfully.')}catch(err){setMsg(err.message)}}
-  return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Payment Proof Review</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.includes('success')||msg.includes('refreshed')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div>}<div className="adminGrid"><div className="adminBox"><h3>Payment Proofs</h3>{payments.length===0&&<p>No payment proofs found.</p>}{payments.map(p=><div className="adminRow" key={p._id}><strong>{p.userName}</strong><p>{p.plan}</p><p>{p.method} | {p.transactionId}</p><p>Status: {p.status}</p><div className="rowBtns"><button onClick={()=>viewShot(p._id)}>View Screenshot</button>{p.status!=='approved'&&<button onClick={()=>approve(p._id)}>Approve VIP</button>}</div></div>)}</div><div className="adminBox"><h3>Users</h3>{users.map(u=><div className="adminRow" key={u._id}><strong>{u.name}</strong><p>{u.email}</p><p>VIP: {u.vip?'YES':'NO'}</p>{u.vip&&<button onClick={()=>removeVip(u._id)}>Remove VIP</button>}</div>)}</div><div className="adminBox"><h3>Post Signal</h3><form onSubmit={postSignal}><input value={signal.title} onChange={e=>setSignal({...signal,title:e.target.value})}/><textarea value={signal.message} onChange={e=>setSignal({...signal,message:e.target.value})}/><label className="check"><input type="checkbox" checked={signal.sendTelegram} onChange={e=>setSignal({...signal,sendTelegram:e.target.checked})}/> Send to Telegram</label><button>Post Signal</button></form></div></div></section>
-}
-
+import React,{useEffect,useState}from'react'
+import ReactDOM from'react-dom/client'
+import'./style.css'
+const API_URL='https://one000pips-backend.onrender.com'
+const PAYPAL_EMAIL='vimu1113@gmail.com'
+const SKRILL_EMAIL='vimu1113@gmail.com'
+const BINANCE_PAY_ID='41356322'
+const TELEGRAM_FREE='https://t.me/ForexHubbSignals'
+function getToken(){return localStorage.getItem('token')}
+async function api(path,options={}){const isForm=options.body instanceof FormData;const res=await fetch(`${API_URL}${path}`,{...options,headers:{...(isForm?{}:{'Content-Type':'application/json'}),...(getToken()?{Authorization:`Bearer ${getToken()}`}:{}) ,...(options.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||'Request failed');return data}
+function formatDate(d){return d?new Date(d).toLocaleDateString():'Lifetime'}
+function VipBadge({user}){if(!user)return null;if(user.vip)return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>;if(user.status==='expired')return <div className="expiredBadge">VIP Expired</div>;return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div>}
+function App(){const[page,setPage]=useState('home'),[user,setUser]=useState(null);useEffect(()=>{const u=localStorage.getItem('user');if(u){setUser(JSON.parse(u));refreshMe()}},[]);async function refreshMe(){if(!getToken())return;try{const fresh=await api('/api/me');localStorage.setItem('user',JSON.stringify(fresh));setUser(fresh)}catch{}}function saveSession(t,u){localStorage.setItem('token',t);localStorage.setItem('user',JSON.stringify(u));setUser(u)}function logout(){localStorage.removeItem('token');localStorage.removeItem('user');setUser(null);setPage('home')}return <div><nav className="nav"><button className="brand" onClick={()=>setPage('home')}><img src="/logo.jpg"/><span>1000PIPS</span></button><div className="navLinks"><button onClick={()=>setPage('home')}>Home</button><button onClick={()=>setPage('plans')}>VIP Plans</button><button onClick={()=>setPage('payment')}>Payment</button><button onClick={()=>setPage('vip')}>VIP Area</button><button onClick={()=>setPage('admin')}>Admin</button>{user?<button onClick={logout}>Logout</button>:<button onClick={()=>setPage('login')}>Login</button>}</div></nav>{user&&<div className="userBar"><span>{user.email}</span><VipBadge user={user}/></div>}{page==='home'&&<Home setPage={setPage}/>} {page==='plans'&&<Plans setPage={setPage}/>} {page==='login'&&<Login saveSession={saveSession} setPage={setPage}/>} {page==='payment'&&<Payment user={user} setUser={setUser} setPage={setPage}/>} {page==='vip'&&<Vip user={user} setPage={setPage}/>} {page==='admin'&&<Admin user={user} setPage={setPage}/>}<Footer/></div>}
+function Home({setPage}){return <><header className="hero"><div className="heroBox"><img src="/logo.jpg" className="heroLogo"/><p className="green">PREMIUM FOREX SIGNALS</p><h1>Trade With 1000PIPS VIP Signals</h1><p className="sub">Professional Forex, Gold, Crypto and Indices signals with clear entry, stop loss, take profit and market analysis.</p><div className="actions"><button onClick={()=>setPage('plans')}>View VIP Plans</button><a href={TELEGRAM_FREE} target="_blank">Free Telegram Channel</a></div></div></header><section className="section"><p className="green">VIP SYSTEM</p><h2>Membership Access With Expiry</h2><div className="grid"><div><h3>1 Month</h3><p>VIP expires after 30 days.</p></div><div><h3>3 Months</h3><p>VIP expires after 90 days.</p></div><div><h3>Lifetime</h3><p>No expiry date.</p></div></div></section></>}
+function Plans({setPage}){const plans=[['1 Month VIP','$45','30 days VIP access.'],['3 Months VIP','$100','90 days VIP access.'],['Lifetime VIP','$400','Lifetime VIP access.']];return <section className="section"><p className="green">VIP MEMBERSHIP</p><h2>Choose Your Plan</h2><div className="cards">{plans.map(([n,p,t],i)=><div className={i===1?'card popular':'card'} key={n}>{i===1&&<span className="tag">MOST POPULAR</span>}<h3>{n}</h3><h4>{p}</h4><p>{t}</p><button onClick={()=>setPage('payment')}>Join Now</button></div>)}</div></section>}
+function Login({saveSession,setPage}){const[mode,setMode]=useState('login'),[form,setForm]=useState({name:'',email:'',password:''}),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false);async function submit(e){e.preventDefault();setMsg('');setLoading(true);try{const path=mode==='login'?'/api/auth/login':'/api/auth/register';const payload=mode==='login'?{email:form.email,password:form.password}:{name:form.name,email:form.email,password:form.password};const data=await api(path,{method:'POST',body:JSON.stringify(payload)});saveSession(data.token,data.user);setPage(data.user.role==='admin'?'admin':'payment')}catch(err){setMsg(err.message)}finally{setLoading(false)}}return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2><form className="form" onSubmit={submit}>{mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg&&<p className="error">{msg}</p>}<p className="switch">{mode==='login'?'No account?':'Already have account?'}<button type="button" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?' Register here':' Login here'}</button></p></form></section>}
+function Payment({user,setUser,setPage}){const[plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false);function onFile(e){const f=e.target.files[0];setScreenshot(f||null);setPreview(f?URL.createObjectURL(f):'')}async function submit(e){e.preventDefault();setMsg('');if(!user){setPage('login');return}const fd=new FormData();fd.append('plan',plan);fd.append('method',method);fd.append('transactionId',transactionId);fd.append('note',note);if(screenshot)fd.append('screenshot',screenshot);setLoading(true);try{await api('/api/payments/proof',{method:'POST',body:fd});const updated={...user,plan,status:'pending_payment'};localStorage.setItem('user',JSON.stringify(updated));setUser(updated);setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.');setTransactionId('');setNote('');setScreenshot(null);setPreview('')}catch(err){setMsg(err.message)}finally{setLoading(false)}}return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Optional note" value={note} onChange={e=>setNote(e.target.value)}/><label className="upload">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img src={preview} className="preview"/>}<button disabled={loading}>{loading?'Submitting...':user?'Submit Proof':'Login/Register First'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section>}
+function Vip({user,setPage}){const[signals,setSignals]=useState([]),[msg,setMsg]=useState('');useEffect(()=>{async function load(){if(!user)return;try{setSignals(await api('/api/vip/signals'))}catch(e){setMsg(e.message)}}load()},[user]);if(!user)return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>;if(!user.vip&&user.role!=='admin')return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>;return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals</h2><div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="signals">{signals.length===0&&<p>No signals posted yet.</p>}{signals.map(s=><div key={s._id} className="signal"><h3>{s.title}</h3><pre>{s.message}</pre></div>)}</div></section>}
+function Admin({user,setPage}){const[users,setUsers]=useState([]),[payments,setPayments]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45'),[signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\\nEntry: 3350\\nSL: 3340\\nTP1: 3370\\nTP2: 3385',sendTelegram:true});async function loadAdmin(){setMsg('');try{const[u,p]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments')]);setUsers(u);setPayments(p);setMsg('Admin data refreshed.')}catch(e){setMsg(e.message)}}useEffect(()=>{if(user?.role==='admin')loadAdmin()},[user]);if(!user)return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>;if(user.role!=='admin')return <section className="section narrow"><h2>Admin Access Required</h2></section>;async function approve(id){await api(`/api/admin/payments/${id}/approve`,{method:'PUT'});await loadAdmin()}async function viewShot(id){try{const d=await api(`/api/admin/payments/${id}/screenshot`);setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`)}catch(e){setMsg(e.message)}}async function removeVip(id){await api(`/api/admin/users/${id}/remove-vip`,{method:'PUT'});await loadAdmin()}async function renewVip(id){await api(`/api/admin/users/${id}/renew-vip`,{method:'PUT',body:JSON.stringify({plan:renewPlan})});await loadAdmin()}async function postSignal(e){e.preventDefault();try{await api('/api/admin/signals',{method:'POST',body:JSON.stringify(signal)});setMsg('Signal posted successfully.')}catch(err){setMsg(err.message)}}return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>VIP Expiry Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.includes('success')||msg.includes('refreshed')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div>}<div className="adminGrid"><div className="adminBox"><h3>Payment Proofs</h3>{payments.length===0&&<p>No payment proofs found.</p>}{payments.map(p=><div className="adminRow" key={p._id}><strong>{p.userName}</strong><p>{p.plan}</p><p>{p.method} | {p.transactionId}</p><p>Status: {p.status}</p><div className="rowBtns"><button onClick={()=>viewShot(p._id)}>View Screenshot</button>{p.status!=='approved'&&<button onClick={()=>approve(p._id)}>Approve VIP</button>}</div></div>)}</div><div className="adminBox"><h3>Users & Expiry</h3><select value={renewPlan} onChange={e=>setRenewPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select>{users.map(u=><div className="adminRow" key={u.id}><strong>{u.name}</strong><p>{u.email}</p><p>VIP: {u.vip?'YES':'NO'} | Status: {u.status}</p><p>Expires: {formatDate(u.vipExpiryDate)}</p><p>Remaining: {u.daysRemaining==='Lifetime'?'Lifetime':`${u.daysRemaining||0} days`}</p><button onClick={()=>renewVip(u.id)}>Renew / Extend VIP</button>{u.vip&&<button onClick={()=>removeVip(u.id)}>Remove VIP</button>}</div>)}</div><div className="adminBox"><h3>Post Signal</h3><form onSubmit={postSignal}><input value={signal.title} onChange={e=>setSignal({...signal,title:e.target.value})}/><textarea value={signal.message} onChange={e=>setSignal({...signal,message:e.target.value})}/><label className="check"><input type="checkbox" checked={signal.sendTelegram} onChange={e=>setSignal({...signal,sendTelegram:e.target.checked})}/> Send to Telegram</label><button>Post Signal</button></form></div></div></section>}
 function Footer(){return <footer><h2>1000PIPS</h2><p>Professional Forex Signals & Market Analysis</p></footer>}
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
