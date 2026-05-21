@@ -1,1 +1,1 @@
-Analysis Chart Upload frontend. Upload this folder contents to frontend repo, then push origin.
+Replace your frontend repo src/main.jsx with this file, then push origin.
