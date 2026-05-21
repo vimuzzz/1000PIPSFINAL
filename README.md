@@ -1,1 +1,10 @@
-Upload this frontend folder contents to your frontend GitHub repo. Vercel: root ./, npm install, npm run build, dist.
+# 1000PIPS Clean Customer Frontend
+
+Upload these files to your frontend GitHub repository.
+
+Vercel settings:
+Framework Preset: Vite
+Root Directory: ./
+Install Command: npm install
+Build Command: npm run build
+Output Directory: dist
