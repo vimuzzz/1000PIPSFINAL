@@ -59,7 +59,7 @@ function App(){
     {page==='archive' && <Archive user={user} setPage={setPage}/>} 
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
     {page==='admin' && <Admin user={user} setPage={setPage}/>} 
-    <FloatingContactButtons/><Footer/>
+    <ProofLightboxController/><FloatingContactButtons/><Footer/>
   </div>
 }
 
@@ -439,6 +439,65 @@ function Admin({user,setPage}){
       <div className="adminBox full"><h3>Archived Reports</h3>{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p></div>)}</div>
     </div>
   </section>
+}
+
+
+function ProofLightboxController(){
+  const [items,setItems]=useState([])
+  const [active,setActive]=useState(null)
+
+  useEffect(()=>{
+    function collect(){
+      const imgs = Array.from(document.querySelectorAll('.proofScreenshotCard img'))
+      return imgs.map((img,index)=>{
+        const card = img.closest('.proofScreenshotCard')
+        const title = card?.querySelector('h3')?.textContent || '1000PIPS Proof'
+        const desc = card?.querySelector('p')?.textContent || ''
+        const cat = card?.querySelector('.proofScreenshotBody span')?.textContent || 'Proof'
+        img.style.cursor = 'zoom-in'
+        img.setAttribute('data-proof-index', String(index))
+        return { src: img.src, title, desc, cat }
+      })
+    }
+
+    function handleClick(e){
+      const img = e.target.closest?.('.proofScreenshotCard img')
+      if(!img) return
+      const all = collect()
+      const idx = Number(img.getAttribute('data-proof-index') || 0)
+      setItems(all)
+      setActive(idx)
+    }
+
+    const timer = setTimeout(collect, 600)
+    document.addEventListener('click', handleClick)
+    return ()=>{
+      clearTimeout(timer)
+      document.removeEventListener('click', handleClick)
+    }
+  },[])
+
+  if(active===null || !items.length) return null
+
+  const item = items[active] || items[0]
+  function close(){ setActive(null) }
+  function next(e){ e.stopPropagation(); setActive((active+1)%items.length) }
+  function prev(e){ e.stopPropagation(); setActive((active-1+items.length)%items.length) }
+
+  return <div className="globalProofLightbox" onClick={close}>
+    <div className="globalProofBox" onClick={e=>e.stopPropagation()}>
+      <button className="globalProofClose" onClick={close}>×</button>
+      {items.length>1&&<button className="globalProofNav globalProofPrev" onClick={prev}>‹</button>}
+      <img src={item.src} alt={item.title}/>
+      {items.length>1&&<button className="globalProofNav globalProofNext" onClick={next}>›</button>}
+      <div className="globalProofCaption">
+        <span>{item.cat}</span>
+        <h3>{item.title}</h3>
+        <p>{item.desc}</p>
+        <small>{active+1} / {items.length}</small>
+      </div>
+    </div>
+  </div>
 }
 
 function FloatingContactButtons(){

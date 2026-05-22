@@ -700,3 +700,131 @@ footer h2{color:#00ff88}
     max-height:68vh;
   }
 }
+
+
+/* Strong Proof Gallery Popup Fix */
+.proofScreenshotCard img{
+  cursor:zoom-in!important;
+}
+.proofScreenshotCard{
+  position:relative;
+}
+.proofScreenshotCard::after{
+  content:"Click to enlarge";
+  position:absolute;
+  left:14px;
+  top:14px;
+  background:rgba(0,0,0,.72);
+  color:#00ff88;
+  border:1px solid rgba(0,255,136,.35);
+  padding:7px 11px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  pointer-events:none;
+}
+.globalProofLightbox{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:rgba(0,0,0,.94);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.globalProofBox{
+  position:relative;
+  width:min(1120px,96vw);
+  max-height:96vh;
+}
+.globalProofBox>img{
+  width:100%;
+  max-height:74vh;
+  object-fit:contain;
+  display:block;
+  background:#050505;
+  border:1px solid rgba(0,255,136,.35);
+  border-radius:20px;
+  box-shadow:0 30px 90px rgba(0,0,0,.7);
+}
+.globalProofClose{
+  position:absolute;
+  top:-14px;
+  right:-14px;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:none;
+  background:#00ff88;
+  color:#000;
+  font-size:30px;
+  font-weight:900;
+  line-height:1;
+  z-index:5;
+  cursor:pointer;
+}
+.globalProofNav{
+  position:absolute;
+  top:38%;
+  transform:translateY(-50%);
+  width:52px;
+  height:70px;
+  border-radius:18px;
+  border:1px solid rgba(0,255,136,.38);
+  background:rgba(0,0,0,.72);
+  color:#00ff88;
+  font-size:52px;
+  line-height:1;
+  z-index:5;
+  cursor:pointer;
+}
+.globalProofPrev{left:10px}
+.globalProofNext{right:10px}
+.globalProofCaption{
+  margin-top:12px;
+  background:#090909;
+  border:1px solid rgba(0,255,136,.22);
+  border-radius:18px;
+  padding:16px;
+}
+.globalProofCaption span{
+  display:inline-block;
+  background:#00ff88;
+  color:#000;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+.globalProofCaption h3{
+  color:#fff;
+  margin-bottom:6px;
+}
+.globalProofCaption p,.globalProofCaption small{
+  color:#d0d0d0;
+  line-height:1.6;
+}
+
+@media(max-width:950px){
+  .globalProofBox>img{
+    max-height:68vh;
+  }
+  .globalProofClose{
+    top:8px;
+    right:8px;
+  }
+  .globalProofNav{
+    top:auto;
+    bottom:112px;
+    width:44px;
+    height:54px;
+    font-size:40px;
+  }
+  .globalProofPrev{left:12px}
+  .globalProofNext{right:12px}
+  .proofScreenshotCard::after{
+    font-size:11px;
+  }
+}
