@@ -26,6 +26,7 @@ function formatDate(d){ return d?new Date(d).toLocaleDateString():'Lifetime' }
 function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp'; if(n<0) return 'sl'; return 'breakeven' }
 function VipBadge({user}){ if(!user) return null; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
+function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
 
 function App(){
   const [page,setPage]=useState('home')
@@ -255,6 +256,7 @@ function Home({setPage}){
       </div>
     </section>
 
+    <ProofGallery limit={6}/>
     <section className="section faqSection">
       <p className="green">FAQ</p>
       <h2>Frequently Asked Questions</h2>
@@ -334,6 +336,38 @@ function TradeCard({trade}){ return <div className={`tradeCard ${trade.status}`}
 function SignalDashboard({user,setPage}){ const[stats,setStats]=useState(null),[trades,setTrades]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[user]); async function load(){ if(!user){ setMsg('Please login first.'); return } try{ setStats(await api('/api/vip/stats')); setTrades(await api('/api/vip/trades')) }catch(e){ setMsg(e.message) } } if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Dashboard is only for approved VIP members</h2></section>; return <section className="section"><p className="green">SIGNAL DASHBOARD</p><h2>Trading Performance</h2><button className="refresh" onClick={load}>Refresh Dashboard</button>{msg&&<p className="error">{msg}</p>}{stats&&<StatsCards stats={stats}/>}<div className="listGrid">{trades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}</div></section> }
 function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="cards">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><div key={s._id} className="card"><h3>{s.title}</h3><pre>{s.message}</pre></div>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
 function Archive({user,setPage}){ const[reports,setReports]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[user]); async function load(){ if(!user) return; try{ setReports(await api('/api/vip/reports')) }catch(e){ setMsg(e.message) } } if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Performance Archive is members-only</h2></section>; return <section className="section"><p className="green">PERFORMANCE ARCHIVE</p><h2>Past Weekly & Monthly Reports</h2><button className="refresh" onClick={load}>Refresh Archive</button>{msg&&<p className="error">{msg}</p>}<div className="cards">{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="card"><h3>{r.title}</h3><p>{r.period} · {new Date(r.createdAt).toLocaleDateString()}</p><p><strong>Pips:</strong> {r.totalPips}</p><p><strong>Win Rate:</strong> {r.winRate}%</p><p><strong>Wins/Losses:</strong> {r.wins}/{r.losses}</p><pre>{r.reportText}</pre></div>)}</div></section> }
+
+function ProofGallery({limit=6}){
+  const [proofs,setProofs]=useState([])
+  const [msg,setMsg]=useState('')
+  useEffect(()=>{ load() },[])
+  async function load(){
+    try{ setProofs(await api('/api/proofs/public')) }catch(e){ setMsg(e.message) }
+  }
+  const shown = limit ? proofs.slice(0,limit) : proofs
+  return <section className="section realProofSection">
+    <p className="green">REAL PROOF</p>
+    <h2>Trading Results, Feedback & Proof Screenshots</h2>
+    <p className="centerText">
+      View real screenshots shared by 1000PIPS, including trading results, feedback, performance proof and analysis examples.
+    </p>
+    <button className="refresh" onClick={load}>Refresh Proof</button>
+    {msg&&<p className="error">{msg}</p>}
+    <div className="proofScreenshotGrid">
+      {shown.length===0&&<p>No proof screenshots posted yet.</p>}
+      {shown.map(p=><div key={p._id} className="proofScreenshotCard">
+        {p.proofImageData&&<img src={imgSrcFromProof(p)} alt={p.title}/>}
+        <div className="proofScreenshotBody">
+          <span>{p.category}</span>
+          <h3>{p.title}</h3>
+          <p>{p.description}</p>
+          <small>{new Date(p.createdAt).toLocaleDateString()}</small>
+        </div>
+      </div>)}
+    </div>
+  </section>
+}
+
 function AnalysisCard({post}){ return <div className="analysisCard"><div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>{post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}</div> }
 function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
 function Admin({user,setPage}){
@@ -342,7 +376,7 @@ function Admin({user,setPage}){
   const [trade,setTrade]=useState({pair:'XAUUSD',category:'Gold',direction:'BUY',entry:'3350',stopLoss:'3340',takeProfit1:'3370',takeProfit2:'3385',riskReward:'1:2',notes:'Trend continuation setup',sendTelegram:true})
   const [analysisForm,setAnalysisForm]=useState({title:'Gold Analysis - London Session',market:'Gold',bias:'Bullish',summary:'Price is holding above support and showing bullish continuation potential.',content:'Look for bullish continuation if price holds above the marked support zone. Wait for confirmation on lower timeframe before entry.',keyLevels:'Support 3340, Resistance 3370',tradePlan:'Buy dips above support. Invalidation below 3340.',visibility:'public',sendTelegram:true})
   const [analysisChart,setAnalysisChart]=useState(null),[analysisPreview,setAnalysisPreview]=useState(''),[customPips,setCustomPips]=useState({})
-  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
+  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,pr]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/proofs')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setProofs(pr); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
   useEffect(()=>{ if(user?.role==='admin') loadAdmin() },[user])
   if(!user) return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
@@ -356,6 +390,11 @@ function Admin({user,setPage}){
   async function sendReportTelegram(){ try{ await api('/api/admin/report/send-telegram',{method:'POST'}); setMsg('Weekly report sent to Telegram.'); }catch(err){ setMsg(err.message) } }
   async function archiveCurrent(period){ try{ await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`})}); setMsg(`${period} report saved to archive.`); await loadAdmin() }catch(err){ setMsg(err.message) } }
   function onAnalysisChart(e){ const f=e.target.files[0]; setAnalysisChart(f||null); setAnalysisPreview(f?URL.createObjectURL(f):'') }
+
+  function onProofImage(e){ const f=e.target.files[0]; setProofImage(f||null); setProofPreview(f?URL.createObjectURL(f):'') }
+  async function addProof(e){ e.preventDefault(); try{ const fd=new FormData(); Object.entries(proofForm).forEach(([k,v])=>fd.append(k,String(v))); if(proofImage) fd.append('proofImage',proofImage); await api('/api/admin/proofs',{method:'POST',body:fd}); setMsg('Proof screenshot added successfully.'); setProofImage(null); setProofPreview(''); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function deleteProof(id){ await api(`/api/admin/proofs/${id}`,{method:'DELETE'}); await loadAdmin() }
+
   async function postAnalysis(e){ e.preventDefault(); try{ const fd=new FormData(); Object.entries(analysisForm).forEach(([k,v])=>fd.append(k, String(v))); if(analysisChart) fd.append('chartImage',analysisChart); await api('/api/admin/analysis',{method:'POST',body:fd}); setMsg('Analysis posted. If Telegram checkbox is enabled, chart was sent to channel too.'); setAnalysisChart(null); setAnalysisPreview(''); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function deleteAnalysis(id){ await api(`/api/admin/analysis/${id}`,{method:'DELETE'}); await loadAdmin() }
   return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Telegram Analysis Image Posting + Full Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.toLowerCase().includes('success')||msg.toLowerCase().includes('refreshed')||msg.toLowerCase().includes('saved')||msg.toLowerCase().includes('sent')||msg.toLowerCase().includes('posted')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal" onClick={()=>setViewer(null)}><div className="modalInner"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div></div>}
@@ -369,6 +408,32 @@ function Admin({user,setPage}){
       <div className="adminBox"><h3>Add Trade Signal</h3><form onSubmit={addTrade} className="form compact"><input placeholder="Pair" value={trade.pair} onChange={e=>setTrade({...trade,pair:e.target.value})}/><select value={trade.category} onChange={e=>setTrade({...trade,category:e.target.value})}><option>Gold</option><option>Forex</option><option>Crypto</option><option>Indices</option><option>Oil</option></select><select value={trade.direction} onChange={e=>setTrade({...trade,direction:e.target.value})}><option>BUY</option><option>SELL</option></select><input placeholder="Entry" value={trade.entry} onChange={e=>setTrade({...trade,entry:e.target.value})}/><input placeholder="Stop Loss" value={trade.stopLoss} onChange={e=>setTrade({...trade,stopLoss:e.target.value})}/><input placeholder="TP1" value={trade.takeProfit1} onChange={e=>setTrade({...trade,takeProfit1:e.target.value})}/><input placeholder="TP2" value={trade.takeProfit2} onChange={e=>setTrade({...trade,takeProfit2:e.target.value})}/><input placeholder="Risk Reward" value={trade.riskReward} onChange={e=>setTrade({...trade,riskReward:e.target.value})}/><textarea placeholder="Notes" value={trade.notes} onChange={e=>setTrade({...trade,notes:e.target.value})}/><label className="check"><input type="checkbox" checked={trade.sendTelegram} onChange={e=>setTrade({...trade,sendTelegram:e.target.checked})}/> Send to Telegram</label><button>Add Trade</button></form></div>
       <div className="adminBox full"><h3>Manage Trades With Exact Pips</h3>{trades.length===0&&<p>No trades found.</p>}{trades.map(t=><div className="adminRow" key={t._id}><strong>{t.pair} {t.direction}</strong><p>Status: {t.status} | Current pips: {t.resultPips}</p><div className="rowBtns"><button onClick={()=>updateTrade(t._id,100)}>TP +100</button><button onClick={()=>updateTrade(t._id,-50)}>SL -50</button><button onClick={()=>updateTrade(t._id,0)}>BE 0</button></div><div className="exactPipsRow"><input type="number" placeholder="Exact pips" value={customPips[t._id]||''} onChange={e=>setCustomPips({...customPips,[t._id]:e.target.value})}/><button onClick={()=>updateTrade(t._id, customPips[t._id]||0)}>Close With Exact Pips</button></div></div>)}</div>
       <div className="adminBox full"><h3>Post Market Analysis With Chart Image</h3><form onSubmit={postAnalysis} className="form compact"><input placeholder="Title" value={analysisForm.title} onChange={e=>setAnalysisForm({...analysisForm,title:e.target.value})}/><select value={analysisForm.market} onChange={e=>setAnalysisForm({...analysisForm,market:e.target.value})}><option>Gold</option><option>GBPUSD</option><option>EURUSD</option><option>US30</option><option>BTCUSD</option><option>Oil</option><option>Other</option></select><select value={analysisForm.bias} onChange={e=>setAnalysisForm({...analysisForm,bias:e.target.value})}><option>Bullish</option><option>Bearish</option><option>Neutral</option></select><textarea placeholder="Summary" value={analysisForm.summary} onChange={e=>setAnalysisForm({...analysisForm,summary:e.target.value})}/><textarea rows="7" placeholder="Full analysis content" value={analysisForm.content} onChange={e=>setAnalysisForm({...analysisForm,content:e.target.value})}/><input placeholder="Key levels" value={analysisForm.keyLevels} onChange={e=>setAnalysisForm({...analysisForm,keyLevels:e.target.value})}/><textarea placeholder="Trade plan" value={analysisForm.tradePlan} onChange={e=>setAnalysisForm({...analysisForm,tradePlan:e.target.value})}/><select value={analysisForm.visibility} onChange={e=>setAnalysisForm({...analysisForm,visibility:e.target.value})}><option value="public">Public</option><option value="vip">VIP</option></select><label className="check"><input type="checkbox" checked={analysisForm.sendTelegram} onChange={e=>setAnalysisForm({...analysisForm,sendTelegram:e.target.checked})}/> Send chart + analysis to Telegram</label><label className="uploadBox">Upload chart image<input type="file" accept="image/*" onChange={onAnalysisChart}/></label>{analysisPreview&&<img className="preview analysisPreview" src={analysisPreview}/>}<button>Post Analysis With Chart</button></form></div>
+      
+      <div className="adminBox full"><h3>Add Real Proof Screenshot</h3>
+        <form onSubmit={addProof} className="form compact">
+          <input placeholder="Proof title" value={proofForm.title} onChange={e=>setProofForm({...proofForm,title:e.target.value})}/>
+          <select value={proofForm.category} onChange={e=>setProofForm({...proofForm,category:e.target.value})}>
+            <option>Trading Result</option>
+            <option>Member Feedback</option>
+            <option>Telegram Proof</option>
+            <option>Performance Proof</option>
+            <option>Analysis Proof</option>
+          </select>
+          <textarea placeholder="Short description" value={proofForm.description} onChange={e=>setProofForm({...proofForm,description:e.target.value})}/>
+          <select value={proofForm.visibility} onChange={e=>setProofForm({...proofForm,visibility:e.target.value})}>
+            <option value="public">Public</option>
+            <option value="vip">VIP</option>
+          </select>
+          <label className="uploadBox">Upload proof screenshot<input type="file" accept="image/*" onChange={onProofImage}/></label>
+          {proofPreview&&<img className="preview analysisPreview" src={proofPreview}/>}
+          <button>Add Proof Screenshot</button>
+        </form>
+      </div>
+      <div className="adminBox full"><h3>Proof Screenshot Posts</h3>
+        {proofs.length===0&&<p>No proof screenshots yet.</p>}
+        {proofs.map(p=><div key={p._id} className="adminRow"><strong>{p.title}</strong><p>{p.category} · {p.visibility}</p>{p.proofImageData&&<img className="miniChart" src={imgSrcFromProof(p)} alt={p.title}/>}<div className="rowBtns"><button onClick={()=>deleteProof(p._id)}>Delete</button></div></div>)}
+      </div>
+
       <div className="adminBox full"><h3>Published Analysis Posts</h3>{analysis.length===0&&<p>No analysis posts yet.</p>}{analysis.map(post=><div key={post._id} className="adminRow"><strong>{post.title}</strong><p>{post.market} · {post.bias} · {post.visibility}</p>{post.chartImageData&&<img className="miniChart" src={imgSrcFromPost(post)} alt={post.title}/>}<div className="rowBtns"><button onClick={()=>deleteAnalysis(post._id)}>Delete</button></div></div>)}</div>
       <div className="adminBox full"><h3>Archived Reports</h3>{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p></div>)}</div>
     </div>
