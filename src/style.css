@@ -1,6 +1,78 @@
 
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{min-height:100%;background:#050505!important;color:#fff!important;font-family:Arial,Helvetica,sans-serif}
+body{overflow-x:hidden}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+pre{white-space:pre-wrap;word-break:break-word}
 
-/* Premium Landing Page Upgrade */
+.nav{
+  width:min(1180px,92%);
+  margin:auto;
+  padding:18px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+.brand{
+  display:flex!important;
+  gap:10px;
+  align-items:center;
+  background:none!important;
+  border:none!important;
+  color:#00ff88!important;
+  font-weight:900;
+  font-size:23px;
+}
+.brand img{
+  width:48px!important;
+  height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  object-fit:cover;
+  border-radius:12px;
+}
+.navLinks{display:flex;gap:8px;flex-wrap:wrap}
+.navLinks button{
+  background:#111!important;
+  border:1px solid rgba(0,255,136,.35)!important;
+  color:#fff!important;
+  border-radius:999px!important;
+  padding:9px 14px!important;
+}
+.navLinks button:hover{background:#00ff88!important;color:#000!important}
+
+.userBar{
+  width:min(1180px,92%);
+  margin:0 auto 18px;
+  background:#0c0c0c;
+  border:1px solid rgba(0,255,136,.22);
+  border-radius:16px;
+  padding:12px 16px;
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.vipBadge{color:#00ff88}
+.expiredBadge{color:#ff7777}
+.pendingBadge{color:#ffd166}
+
+.green,.eyebrow{color:#00ff88!important;font-weight:900;letter-spacing:1px}
+.section{
+  width:min(1180px,92%);
+  margin:auto;
+  padding:58px 0;
+}
+.section h2{
+  font-size:clamp(32px,5vw,54px);
+  margin:14px 0 26px;
+  color:#fff;
+}
+.centerText{text-align:center;color:#d0d0d0;line-height:1.7;max-width:780px;margin:0 auto 20px}
+
 .premiumHero{
   position:relative;
   overflow:hidden;
@@ -10,7 +82,7 @@
   background:
     radial-gradient(circle at 15% 20%, rgba(0,255,136,.22), transparent 28%),
     radial-gradient(circle at 85% 30%, rgba(0,180,255,.14), transparent 25%),
-    linear-gradient(135deg,#07100b,#0b0b0b 55%,#050505);
+    linear-gradient(135deg,#07100b,#0b0b0b 55%,#050505)!important;
   border:1px solid rgba(0,255,136,.25);
   box-shadow:0 24px 70px rgba(0,0,0,.45);
 }
@@ -19,7 +91,6 @@
   inset:auto -20% -40% -20%;
   height:300px;
   background:radial-gradient(circle,rgba(0,255,136,.16),transparent 60%);
-  pointer-events:none;
 }
 .premiumHeroInner{
   position:relative;
@@ -29,16 +100,11 @@
   align-items:center;
   padding:64px;
 }
-.eyebrow{
-  color:#00ff88;
-  font-weight:900;
-  letter-spacing:2px;
-  font-size:13px;
-}
 .heroContent h1{
   font-size:clamp(38px,6vw,76px);
   line-height:.95;
   margin:16px 0 20px;
+  color:#fff;
 }
 .heroText{
   color:#d8d8d8;
@@ -46,34 +112,27 @@
   line-height:1.7;
   max-width:760px;
 }
-.heroActions{
+.heroActions,.proofActions,.buttonRow,.rowBtns{
   display:flex;
   gap:14px;
   flex-wrap:wrap;
   align-items:center;
-  margin-top:28px;
+  margin-top:22px;
 }
-.heroActions button,.heroActions a,.proofActions button,.landingPlan button{
-  background:#00ff88;
-  color:#000;
-  border:none;
-  border-radius:999px;
-  padding:15px 24px;
-  font-weight:900;
-  cursor:pointer;
-  text-decoration:none;
+.heroActions button,.heroActions a,.proofActions button,.landingPlan button,.refresh,.buttonRow button,.rowBtns button,.form button,.exactPipsRow button{
+  background:#00ff88!important;
+  color:#000!important;
+  border:none!important;
+  border-radius:999px!important;
+  padding:14px 22px!important;
+  font-weight:900!important;
 }
 .heroActions .outlineBtn,.proofActions .outlineBtn{
-  background:transparent;
-  color:#00ff88;
-  border:1px solid #00ff88;
+  background:transparent!important;
+  color:#00ff88!important;
+  border:1px solid #00ff88!important;
 }
-.heroTrust{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:24px;
-}
+.heroTrust{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
 .heroTrust span{
   background:rgba(255,255,255,.06);
   border:1px solid rgba(0,255,136,.2);
@@ -90,8 +149,10 @@
   box-shadow:0 20px 60px rgba(0,0,0,.35);
 }
 .heroPanelLogo{
-  width:92px;
-  height:92px;
+  width:92px!important;
+  height:92px!important;
+  max-width:92px!important;
+  max-height:92px!important;
   border-radius:20px;
   object-fit:cover;
   display:block;
@@ -103,14 +164,8 @@
   border-radius:22px;
   padding:22px;
 }
-.signalPreview h3{
-  color:#fff;
-  margin:10px 0 16px;
-}
-.signalPreview p{
-  color:#d7d7d7;
-  margin:8px 0;
-}
+.signalPreview h3{color:#fff;margin:10px 0 16px}
+.signalPreview p{color:#d7d7d7;margin:8px 0}
 .rrBadge{
   display:inline-block;
   margin-top:14px;
@@ -120,26 +175,52 @@
   padding:9px 13px;
   font-weight:900;
 }
-.featureGrid{
+
+.featureGrid,.landingPlans,.cards,.adminGrid,.analysisGrid,.listGrid,.statsGrid,.payGrid{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:18px;
+  gap:20px;
 }
-.featureCard,.landingPlan{
-  background:linear-gradient(180deg,#111,#070707);
-  border:1px solid rgba(0,255,136,.22);
-  border-radius:24px;
-  padding:26px;
-  text-align:left;
+.featureGrid{grid-template-columns:repeat(4,1fr)}
+.landingPlans{grid-template-columns:repeat(3,1fr);margin-top:24px}
+.cards{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.adminGrid,.analysisGrid,.listGrid{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.statsGrid,.payGrid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+
+.featureCard,.landingPlan,.card,.adminBox,.analysisCard,.tradeCard,.payGrid>div,.statsGrid>div,.reportBox,.vipInfo{
+  background:linear-gradient(180deg,#111,#070707)!important;
+  border:1px solid rgba(0,255,136,.22)!important;
+  border-radius:24px!important;
+  padding:24px!important;
+  color:#fff!important;
 }
-.featureCard h3,.landingPlan h3{
-  color:#00ff88;
+.featureCard h3,.landingPlan h3,.card h3,.adminBox h3,.analysisCard h3,.tradeCard h3{
+  color:#00ff88!important;
   margin-bottom:12px;
 }
-.featureCard p,.landingPlan p,.proofText p,.ctaSection p,.centerText{
+.featureCard p,.landingPlan p,.card p,.adminBox p,.analysisCard p,.tradeCard p,.proofText p,.ctaSection p{
   color:#d0d0d0;
   line-height:1.65;
 }
+.landingPlan{position:relative}
+.landingPlan h4,.card h4{
+  font-size:46px;
+  color:#00ff88!important;
+  margin:14px 0;
+}
+.landingPlan ul{margin:20px 0;padding-left:20px;color:#ddd;line-height:1.8}
+.featuredPlan{border:2px solid #00ff88!important;box-shadow:0 20px 60px rgba(0,255,136,.08)}
+.tag{
+  position:absolute;
+  top:12px;
+  right:14px;
+  background:#00ff88;
+  color:#000;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+  font-weight:900;
+}
+
 .proofSection{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -148,19 +229,9 @@
   background:linear-gradient(135deg,#0b0b0b,#07100b);
   border:1px solid rgba(0,255,136,.18);
   border-radius:30px;
-  padding:44px;
+  padding:44px!important;
 }
-.proofActions{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  margin-top:22px;
-}
-.proofStats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
+.proofStats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .proofStats div{
   background:#070707;
   border:1px solid rgba(0,255,136,.18);
@@ -168,63 +239,63 @@
   padding:24px;
   text-align:center;
 }
-.proofStats h3{
-  color:#00ff88;
-  font-size:30px;
-}
-.landingPlans{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:22px;
-  margin-top:24px;
-}
-.landingPlan{
-  position:relative;
-}
-.landingPlan h4{
-  font-size:46px;
-  color:#00ff88;
-  margin:14px 0;
-}
-.landingPlan ul{
-  margin:20px 0;
-  padding-left:20px;
-  color:#ddd;
-  line-height:1.8;
-}
-.featuredPlan{
-  border:2px solid #00ff88;
-  transform:translateY(-8px);
-  box-shadow:0 20px 60px rgba(0,255,136,.08);
-}
-.centerText{
-  max-width:780px;
-  margin:0 auto 20px;
-  text-align:center;
-}
+.proofStats h3{color:#00ff88;font-size:30px}
+
 .ctaSection{
   text-align:center;
   background:radial-gradient(circle at center,rgba(0,255,136,.15),transparent 60%),#080808;
   border:1px solid rgba(0,255,136,.2);
   border-radius:30px;
-  padding:56px 24px;
+  padding:56px 24px!important;
 }
-.ctaSection .heroActions{
-  justify-content:center;
+.ctaSection .heroActions{justify-content:center}
+
+.form{display:grid;gap:12px;max-width:700px;margin:20px auto}
+.form.compact{max-width:none;margin:0}
+.form input,.form select,.form textarea,.adminBox input,.adminBox select,.adminBox textarea,.exactPipsRow input,.reportBox textarea{
+  width:100%;
+  background:#050505!important;
+  border:1px solid rgba(0,255,136,.25)!important;
+  color:#fff!important;
+  border-radius:14px!important;
+  padding:13px 15px!important;
 }
+.form textarea,.adminBox textarea{min-height:110px}
+.uploadBox{
+  display:block;
+  border:1px dashed #00ff88;
+  color:#00ff88;
+  border-radius:16px;
+  padding:16px;
+}
+.uploadBox input{margin-top:10px}
+.preview,.analysisChart,.miniChart{
+  max-width:100%;
+  border-radius:16px;
+  border:1px solid rgba(0,255,136,.25);
+}
+.analysisChart{width:100%;margin:12px 0}
+.miniChart{max-width:260px;margin-top:10px}
+
+.adminBox.full{grid-column:1/-1}
+.adminRow{border-top:1px solid rgba(255,255,255,.08);padding:14px 0}
+.exactPipsRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.exactPipsRow input{max-width:190px}
+.success{color:#00ff88!important}
+.error{color:#ff7777!important}
+footer{
+  width:min(1180px,92%);
+  margin:40px auto 0;
+  padding:34px 0;
+  border-top:1px solid rgba(0,255,136,.18);
+  color:#aaa;
+  text-align:center;
+}
+footer h2{color:#00ff88}
 
 @media(max-width:950px){
-  .premiumHeroInner,.proofSection{
-    grid-template-columns:1fr;
-    padding:34px 20px;
-  }
-  .featureGrid,.landingPlans{
-    grid-template-columns:1fr;
-  }
-  .featuredPlan{
-    transform:none;
-  }
-  .proofStats{
-    grid-template-columns:1fr;
-  }
+  .nav{display:grid;justify-content:start}
+  .premiumHeroInner,.proofSection{grid-template-columns:1fr;padding:34px 20px!important}
+  .featureGrid,.landingPlans,.proofStats{grid-template-columns:1fr}
+  .heroPanel{order:-1}
 }
