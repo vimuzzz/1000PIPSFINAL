@@ -60,8 +60,155 @@ function App(){
   </div>
 }
 
-function Home({setPage}){ return <><header className="hero"><div className="heroBox"><img src="/logo.jpg" className="heroLogo"/><p className="green">PREMIUM FOREX SIGNALS</p><h1>Trade With 1000PIPS VIP Signals</h1><p className="sub">Professional signals, daily market analysis with chart images, transparent performance archive and Telegram automation.</p><div className="actions"><button onClick={()=>setPage('plans')}>View VIP Plans</button><button onClick={()=>setPage('analysis')}>Daily Analysis</button><a href={TELEGRAM_FREE} target="_blank">Free Telegram Channel</a></div></div></header><section className="section"><p className="green">WHAT'S NEW</p><h2>Telegram Analysis Image Posting</h2><div className="cards"><div className="card"><h3>Chart To Telegram</h3><p>Post analysis chart screenshots directly to your Telegram channel.</p></div><div className="card"><h3>Rich Captions</h3><p>Market, bias, summary, key levels and trade plan go together with the chart.</p></div><div className="card"><h3>Public or VIP</h3><p>Choose if each analysis is public or members-only on the website.</p></div></div></section></> }
-function Plans({setPage}){ const plans=[['1 Month VIP','$45','30 days VIP access.'],['3 Months VIP','$100','90 days VIP access.'],['Lifetime VIP','$400','Lifetime VIP access.']]; return <section className="section"><p className="green">VIP MEMBERSHIP</p><h2>Choose Your Plan</h2><div className="cards">{plans.map(([n,p,t],i)=><div className={i===1?'card popular':'card'} key={n}>{i===1&&<span className="tag">MOST POPULAR</span>}<h3>{n}</h3><h4>{p}</h4><p>{t}</p><button onClick={()=>setPage('payment')}>Join Now</button></div>)}</div></section> }
+function Home({setPage}){ 
+  return <>
+    <header className="premiumHero">
+      <div className="heroGlow"></div>
+      <div className="premiumHeroInner">
+        <div className="heroContent">
+          <p className="eyebrow">1000PIPS VIP FOREX SIGNALS</p>
+          <h1>Professional Forex Signals, Market Analysis & Performance Tracking</h1>
+          <p className="heroText">
+            Join a premium trading community built for Gold, Forex, Indices, Crypto and Oil traders.
+            Get clear signals, chart-based analysis, VIP reports, pips tracking and Telegram updates from one platform.
+          </p>
+          <div className="heroActions">
+            <button onClick={()=>setPage('plans')}>Join VIP Now</button>
+            <button className="outlineBtn" onClick={()=>setPage('analysis')}>View Market Analysis</button>
+            <a href={TELEGRAM_FREE} target="_blank">Free Telegram Channel</a>
+          </div>
+          <div className="heroTrust">
+            <span>✅ VIP Dashboard</span>
+            <span>✅ Telegram Signals</span>
+            <span>✅ Chart Analysis</span>
+            <span>✅ Pips Reports</span>
+          </div>
+        </div>
+        <div className="heroPanel">
+          <img src="/logo.jpg" className="heroPanelLogo"/>
+          <div className="signalPreview">
+            <p className="green">LIVE SIGNAL STYLE</p>
+            <h3>XAUUSD BUY Setup</h3>
+            <p>Entry: 3350</p>
+            <p>SL: 3340</p>
+            <p>TP1: 3370</p>
+            <p>TP2: 3385</p>
+            <div className="rrBadge">Risk/Reward 1:3</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section className="section">
+      <p className="green">WHY 1000PIPS</p>
+      <h2>Built For Serious Traders</h2>
+      <div className="featureGrid">
+        <div className="featureCard">
+          <h3>📊 VIP Signals</h3>
+          <p>Clear trade ideas with entry, stop loss, take profit and risk/reward planning.</p>
+        </div>
+        <div className="featureCard">
+          <h3>🖼️ Chart Analysis</h3>
+          <p>Daily market analysis with chart screenshots, key levels and trading bias.</p>
+        </div>
+        <div className="featureCard">
+          <h3>📈 Performance Dashboard</h3>
+          <p>Track active trades, closed trades, total pips, weekly pips and win rate.</p>
+        </div>
+        <div className="featureCard">
+          <h3>🤖 Telegram Automation</h3>
+          <p>Signals, analysis charts and weekly reports can be posted directly to Telegram.</p>
+        </div>
+      </div>
+    </section>
+
+    <section className="section proofSection">
+      <div className="proofText">
+        <p className="green">TRANSPARENT PERFORMANCE</p>
+        <h2>Members Can See The Trading Report</h2>
+        <p>
+          1000PIPS includes a proper VIP dashboard with exact pips tracking, weekly reports,
+          archived performance history and market analysis posts. This helps members trust the process.
+        </p>
+        <div className="proofActions">
+          <button onClick={()=>setPage('dashboard')}>View Dashboard</button>
+          <button className="outlineBtn" onClick={()=>setPage('archive')}>View Archive</button>
+        </div>
+      </div>
+      <div className="proofStats">
+        <div><h3>Exact</h3><p>Pips Tracking</p></div>
+        <div><h3>Weekly</h3><p>Report Generator</p></div>
+        <div><h3>VIP</h3><p>Performance Archive</p></div>
+        <div><h3>Chart</h3><p>Based Analysis</p></div>
+      </div>
+    </section>
+
+    <section className="section">
+      <p className="green">VIP MEMBERSHIP</p>
+      <h2>Choose Your Trading Access</h2>
+      <div className="landingPlans">
+        <div className="landingPlan">
+          <h3>1 Month VIP</h3>
+          <h4>$45</h4>
+          <p>Best for testing the service and joining the VIP dashboard.</p>
+          <button onClick={()=>setPage('payment')}>Start 1 Month</button>
+        </div>
+        <div className="landingPlan featuredPlan">
+          <span className="tag">MOST POPULAR</span>
+          <h3>3 Months VIP</h3>
+          <h4>$100</h4>
+          <p>Best value for serious traders who want consistent signals and analysis.</p>
+          <button onClick={()=>setPage('payment')}>Join 3 Months</button>
+        </div>
+        <div className="landingPlan">
+          <h3>Lifetime VIP</h3>
+          <h4>$400</h4>
+          <p>One-time access for long-term traders who want lifetime membership.</p>
+          <button onClick={()=>setPage('payment')}>Get Lifetime</button>
+        </div>
+      </div>
+    </section>
+
+    <section className="section ctaSection">
+      <p className="green">READY TO JOIN?</p>
+      <h2>Start Trading With A More Professional Signal System</h2>
+      <p>Join 1000PIPS VIP, submit your payment proof, get admin approval and access the VIP dashboard.</p>
+      <div className="heroActions">
+        <button onClick={()=>setPage('plans')}>View VIP Plans</button>
+        <button className="outlineBtn" onClick={()=>setPage('payment')}>Submit Payment</button>
+      </div>
+    </section>
+  </> 
+}
+function Plans({setPage}){ 
+  const plans=[
+    ['1 Month VIP','$45','30 days VIP access. Good for testing signals, analysis and dashboard features.'],
+    ['3 Months VIP','$100','90 days VIP access. Best value for serious traders.'],
+    ['Lifetime VIP','$400','One-time payment for lifetime VIP access.']
+  ]; 
+  return <section className="section">
+    <p className="green">VIP MEMBERSHIP</p>
+    <h2>Choose Your 1000PIPS Plan</h2>
+    <p className="centerText">All plans include VIP dashboard access, premium signals, chart analysis, Telegram updates and performance reports.</p>
+    <div className="landingPlans">
+      {plans.map(([n,p,t],i)=>
+        <div className={i===1?'landingPlan featuredPlan':'landingPlan'} key={n}>
+          {i===1&&<span className="tag">MOST POPULAR</span>}
+          <h3>{n}</h3>
+          <h4>{p}</h4>
+          <p>{t}</p>
+          <ul>
+            <li>VIP signals</li>
+            <li>Chart analysis</li>
+            <li>Performance dashboard</li>
+            <li>Telegram updates</li>
+          </ul>
+          <button onClick={()=>setPage('payment')}>Join Now</button>
+        </div>
+      )}
+    </div>
+  </section> 
+}
 function Login({saveSession,setPage}){ const[mode,setMode]=useState('login'),[form,setForm]=useState({name:'',email:'',password:''}),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false); async function submit(e){ e.preventDefault(); setMsg(''); setLoading(true); try{ const path=mode==='login'?'/api/auth/login':'/api/auth/register'; const payload=mode==='login'?{email:form.email,password:form.password}:{name:form.name,email:form.email,password:form.password}; const data=await api(path,{method:'POST',body:JSON.stringify(payload)}); saveSession(data.token,data.user); setPage(data.user.role==='admin'?'admin':'payment') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2><form className="form" onSubmit={submit}>{mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg&&<p className="error">{msg}</p>}<p className="switchText">{mode==='login'?'No account? ':'Already have an account? '}<button type="button" className="textBtn" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Register':'Login'}</button></p></form></section> }
 function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false); function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') } async function submit(e){ e.preventDefault(); setMsg(''); if(!user){ setPage('login'); return } const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(screenshot) fd.append('screenshot',screenshot); setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Note (optional)" value={note} onChange={e=>setNote(e.target.value)}/><label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
 function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div> }
