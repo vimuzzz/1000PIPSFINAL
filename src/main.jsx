@@ -178,6 +178,96 @@ function Home({setPage}){
         <button className="outlineBtn" onClick={()=>setPage('payment')}>Submit Payment</button>
       </div>
     </section>
+
+    <section className="section proofWallSection">
+      <p className="green">MEMBER TRUST</p>
+      <h2>Why Traders Choose 1000PIPS</h2>
+      <p className="centerText">
+        1000PIPS is built to give members more than random signals. Members can see chart analysis,
+        trade updates, weekly pips reports, performance archive and Telegram alerts in one place.
+      </p>
+      <div className="proofWallGrid">
+        <div className="proofWallCard">
+          <h3>⭐ Clear Trade Plans</h3>
+          <p>Each signal can include entry, SL, TP levels, risk/reward and notes so members understand the idea.</p>
+        </div>
+        <div className="proofWallCard">
+          <h3>📊 Performance Tracking</h3>
+          <p>Trades can be closed with exact pips, and the dashboard updates win rate, weekly pips and total pips.</p>
+        </div>
+        <div className="proofWallCard">
+          <h3>🖼️ Chart-Based Analysis</h3>
+          <p>Market analysis can include chart screenshots, key levels and trade plans, posted to website and Telegram.</p>
+        </div>
+      </div>
+    </section>
+
+    <section className="section testimonialSection">
+      <p className="green">SOCIAL PROOF</p>
+      <h2>What Members Can Expect</h2>
+      <div className="testimonialGrid">
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“The best thing is the clear structure: signals, chart analysis, pips tracking and Telegram updates.”</p>
+          <strong>VIP Member</strong>
+        </div>
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“I like that every trade can be tracked with exact pips and the weekly report is easy to understand.”</p>
+          <strong>Gold Trader</strong>
+        </div>
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“The analysis with chart images helps me understand the market better before taking a trade.”</p>
+          <strong>Forex Member</strong>
+        </div>
+      </div>
+      <p className="smallNote">
+        Note: Trading involves risk. Results depend on market conditions, discipline and risk management.
+      </p>
+    </section>
+
+    <section className="section faqSection">
+      <p className="green">FAQ</p>
+      <h2>Frequently Asked Questions</h2>
+      <div className="faqGrid">
+        <div className="faqItem">
+          <h3>How do I join VIP?</h3>
+          <p>Create an account, choose a plan, send payment, upload payment proof, and wait for admin approval.</p>
+        </div>
+        <div className="faqItem">
+          <h3>How will I receive signals?</h3>
+          <p>You can view signals in the VIP dashboard and receive updates through the Telegram channel.</p>
+        </div>
+        <div className="faqItem">
+          <h3>What markets do you cover?</h3>
+          <p>1000PIPS can cover Gold, Forex pairs, US30, Crypto and Oil depending on market conditions.</p>
+        </div>
+        <div className="faqItem">
+          <h3>Do you provide chart analysis?</h3>
+          <p>Yes. Analysis posts can include chart images, market bias, key levels, summary and trade plan.</p>
+        </div>
+        <div className="faqItem">
+          <h3>Can I see past performance?</h3>
+          <p>VIP members can view the performance archive, weekly reports, total pips and win rate dashboard.</p>
+        </div>
+        <div className="faqItem">
+          <h3>Is profit guaranteed?</h3>
+          <p>No. Trading has risk. Always use proper lot size, stop loss and risk management.</p>
+        </div>
+      </div>
+    </section>
+
+    <section className="section finalSalesCta">
+      <p className="green">START TODAY</p>
+      <h2>Join 1000PIPS VIP And Trade With More Structure</h2>
+      <p>Get access to VIP signals, chart analysis, performance dashboard and Telegram updates.</p>
+      <div className="heroActions">
+        <button onClick={()=>setPage('plans')}>Choose VIP Plan</button>
+        <button className="outlineBtn" onClick={()=>setPage('payment')}>Submit Payment Proof</button>
+      </div>
+    </section>
+
   </> 
 }
 function Plans({setPage}){ 

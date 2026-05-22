@@ -299,3 +299,92 @@ footer h2{color:#00ff88}
   .featureGrid,.landingPlans,.proofStats{grid-template-columns:1fr}
   .heroPanel{order:-1}
 }
+
+
+/* FAQ + Proof/Testimonial Upgrade */
+.proofWallGrid,.testimonialGrid,.faqGrid{
+  display:grid;
+  gap:20px;
+}
+.proofWallGrid,.testimonialGrid{
+  grid-template-columns:repeat(3,1fr);
+  margin-top:28px;
+}
+.faqGrid{
+  grid-template-columns:repeat(2,1fr);
+  margin-top:28px;
+}
+.proofWallCard,.testimonialCard,.faqItem{
+  background:linear-gradient(180deg,#111,#070707)!important;
+  border:1px solid rgba(0,255,136,.22)!important;
+  border-radius:24px!important;
+  padding:26px!important;
+  color:#fff!important;
+}
+.proofWallCard h3,.faqItem h3{
+  color:#00ff88!important;
+  margin-bottom:12px;
+}
+.proofWallCard p,.testimonialCard p,.faqItem p,.smallNote,.finalSalesCta p{
+  color:#d0d0d0;
+  line-height:1.7;
+}
+.testimonialSection{
+  background:
+    radial-gradient(circle at 15% 20%,rgba(0,255,136,.10),transparent 30%),
+    linear-gradient(135deg,#080808,#07100b);
+  border:1px solid rgba(0,255,136,.18);
+  border-radius:30px;
+  padding:48px!important;
+}
+.testimonialCard{
+  min-height:220px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.stars{
+  color:#00ff88;
+  letter-spacing:3px;
+  font-size:20px;
+  margin-bottom:14px;
+}
+.testimonialCard strong{
+  color:#fff;
+  margin-top:18px;
+  display:block;
+}
+.smallNote{
+  margin-top:22px;
+  font-size:13px;
+  text-align:center;
+  opacity:.8;
+}
+.faqItem{
+  transition:.2s ease;
+}
+.faqItem:hover{
+  transform:translateY(-3px);
+  border-color:#00ff88!important;
+}
+.finalSalesCta{
+  text-align:center;
+  background:
+    radial-gradient(circle at center,rgba(0,255,136,.16),transparent 60%),
+    linear-gradient(135deg,#07100b,#080808);
+  border:1px solid rgba(0,255,136,.22);
+  border-radius:30px;
+  padding:58px 24px!important;
+}
+.finalSalesCta .heroActions{
+  justify-content:center;
+}
+
+@media(max-width:950px){
+  .proofWallGrid,.testimonialGrid,.faqGrid{
+    grid-template-columns:1fr;
+  }
+  .testimonialSection{
+    padding:34px 20px!important;
+  }
+}
