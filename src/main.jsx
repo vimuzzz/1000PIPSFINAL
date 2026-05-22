@@ -298,6 +298,21 @@ function Home({setPage}){
       </div>
     </section>
 
+    
+    <section className="section dailyBlogStrategy">
+      <p className="green">DAILY MARKET ANALYSIS BLOG</p>
+      <h2>Attract New Traders With Daily Analysis</h2>
+      <p className="centerText">
+        Posting daily Gold, US30, Forex and Crypto analysis can bring new visitors and build trust before they join VIP.
+        Public analysis works like free value, while VIP analysis can be used to convert serious traders into paying members.
+      </p>
+      <div className="blogStrategyGrid">
+        <div><h3>1</h3><p>Post daily public analysis with chart image</p></div>
+        <div><h3>2</h3><p>Share the same post to Telegram automatically</p></div>
+        <div><h3>3</h3><p>Invite readers to join VIP for signals and reports</p></div>
+      </div>
+    </section>
+
     <section className="section finalSalesCta">
       <p className="green">START TODAY</p>
       <h2>Join 1000PIPS VIP And Trade With More Structure</h2>
@@ -437,6 +452,7 @@ function Admin({user,setPage}){
   async function postSignal(e){ e.preventDefault(); try{ await api('/api/admin/signals',{method:'POST',body:JSON.stringify(signal)}); setMsg('Text signal posted successfully.'); }catch(err){ setMsg(err.message) } }
   async function addTrade(e){ e.preventDefault(); try{ await api('/api/admin/trades',{method:'POST',body:JSON.stringify(trade)}); setMsg('Trade signal added successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips)})}); setMsg('Trade result updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function testEmail(){ try{ await api('/api/admin/test-email',{method:'POST',body:JSON.stringify({})}); setMsg('Test email sent. Check inbox/spam.'); }catch(err){ setMsg(err.message) } }
   async function sendReportTelegram(){ try{ await api('/api/admin/report/send-telegram',{method:'POST'}); setMsg('Weekly report sent to Telegram.'); }catch(err){ setMsg(err.message) } }
   async function archiveCurrent(period){ try{ await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`})}); setMsg(`${period} report saved to archive.`); await loadAdmin() }catch(err){ setMsg(err.message) } }
   function onAnalysisChart(e){ const f=e.target.files[0]; setAnalysisChart(f||null); setAnalysisPreview(f?URL.createObjectURL(f):'') }
@@ -449,8 +465,15 @@ function Admin({user,setPage}){
   async function deleteAnalysis(id){ await api(`/api/admin/analysis/${id}`,{method:'DELETE'}); await loadAdmin() }
   return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Telegram Analysis Image Posting + Full Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.toLowerCase().includes('success')||msg.toLowerCase().includes('refreshed')||msg.toLowerCase().includes('saved')||msg.toLowerCase().includes('sent')||msg.toLowerCase().includes('posted')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal" onClick={()=>setViewer(null)}><div className="modalInner"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div></div>}
     {report?.stats && <div><h3 className="sectionTitle">Performance Summary</h3><StatsCards stats={report.stats}/></div>}
-    <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button></div>
+    <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button><button onClick={testEmail}>Test Email Notification</button></div>
     {report?.reportText && <div className="card"><h3>Current Weekly Report</h3><pre>{report.reportText}</pre></div>}
+    
+    <div className="emailNoticeBox">
+      <h3>Email Notifications</h3>
+      <p>Email notifications are sent when a user registers, submits payment proof, and when admin approves VIP access.</p>
+      <p>To activate emails, add SMTP variables in Render Environment and redeploy backend.</p>
+    </div>
+
     <div className="adminGrid">
             <div className="adminBox full"><h3>Referral / Affiliate Tracking</h3>
         {adminReferrals.length===0&&<p>No referrals yet.</p>}
