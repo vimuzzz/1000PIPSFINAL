@@ -8,6 +8,8 @@ const PAYPAL_EMAIL='vimu1113@gmail.com'
 const SKRILL_EMAIL='vimu1113@gmail.com'
 const BINANCE_PAY_ID='41356322'
 const TELEGRAM_FREE='https://t.me/ForexHubbSignals'
+const WHATSAPP_CONTACT='https://wa.me/94781170977'
+const TELEGRAM_CONTACT='https://t.me/pips1000x'
 
 function getToken(){ return localStorage.getItem('token') }
 async function api(path, options={}){
@@ -56,7 +58,7 @@ function App(){
     {page==='archive' && <Archive user={user} setPage={setPage}/>} 
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
     {page==='admin' && <Admin user={user} setPage={setPage}/>} 
-    <Footer/>
+    <FloatingContactButtons/><Footer/>
   </div>
 }
 
@@ -227,6 +229,32 @@ function Home({setPage}){
       </p>
     </section>
 
+    
+    <section className="section contactSalesSection">
+      <div className="contactSalesInner">
+        <div>
+          <p className="green">NEED HELP BEFORE JOINING?</p>
+          <h2>Contact 1000PIPS Directly</h2>
+          <p>
+            Have questions about VIP plans, payment proof, Telegram access or signals? 
+            Message 1000PIPS directly on WhatsApp or Telegram before joining.
+          </p>
+        </div>
+        <div className="contactCards">
+          <a href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer" className="contactCard whatsappCard">
+            <span>WhatsApp</span>
+            <strong>+94 78 117 0977</strong>
+            <small>Fast support for VIP joining</small>
+          </a>
+          <a href={TELEGRAM_CONTACT} target="_blank" rel="noreferrer" className="contactCard telegramCard">
+            <span>Telegram</span>
+            <strong>@pips1000x</strong>
+            <small>Message directly on Telegram</small>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <section className="section faqSection">
       <p className="green">FAQ</p>
       <h2>Frequently Asked Questions</h2>
@@ -346,6 +374,14 @@ function Admin({user,setPage}){
     </div>
   </section>
 }
+
+function FloatingContactButtons(){
+  return <div className="floatingContacts">
+    <a className="whatsappFloat" href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer">WhatsApp</a>
+    <a className="telegramFloat" href={TELEGRAM_CONTACT} target="_blank" rel="noreferrer">Telegram</a>
+  </div>
+}
+
 function Footer(){ return <footer><h2>1000PIPS</h2><p>Professional Forex Signals & Market Analysis</p></footer> }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
