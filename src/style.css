@@ -883,13 +883,6 @@ footer h2{color:#00ff88}
 .couponApplyBox{display:grid;grid-template-columns:1fr auto;gap:10px}.couponApplyBox input{width:100%}.couponApplyBox button{background:#00ff88!important;color:#000!important;border:none!important;border-radius:999px!important;padding:12px 18px!important;font-weight:900!important}.couponResultBox{background:#07100b;border:1px solid rgba(0,255,136,.25);color:#d0d0d0;border-radius:16px;padding:14px}.couponResultBox strong{color:#00ff88}.couponAdminForm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:none!important}.couponSalesSection{text-align:center;background:radial-gradient(circle at 15% 20%,rgba(0,255,136,.12),transparent 32%),linear-gradient(135deg,#07100b,#080808);border:1px solid rgba(0,255,136,.22);border-radius:30px;padding:48px!important}.couponPromoBox{width:min(520px,100%);margin:26px auto 0;background:#070707;border:1px solid rgba(0,255,136,.24);border-radius:24px;padding:26px}.couponPromoBox span{display:inline-block;background:#00ff88;color:#000;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:900;margin-bottom:12px}.couponPromoBox strong{display:block;color:#00ff88;font-size:44px;letter-spacing:2px;margin-bottom:10px}.couponPromoBox p{color:#d0d0d0}@media(max-width:950px){.couponApplyBox,.couponAdminForm{grid-template-columns:1fr}.couponSalesSection{padding:34px 20px!important}.couponPromoBox strong{font-size:34px}}
 
 
-/* Blog Section Professional Copy Fix */
-.dailyBlogStrategy{
-  text-align:center;
-}
-.dailyBlogStrategy h2{
-  color:#00ff88!important;
-}
-.dailyBlogStrategy .blogStrategyGrid div p{
-  color:#ffffff!important;
-}
+/* Clean Blog Copy Build Fix */
+.dailyBlogStrategy h2{color:#00ff88!important;}
+.dailyBlogStrategy .blogStrategyGrid div p{color:#f2f2f2!important;line-height:1.7!important;}
