@@ -22,6 +22,14 @@ async function api(path, options={}){
   if(!res.ok) throw new Error(data.message || 'Request failed')
   return data
 }
+
+function getPlanPrice(plan){
+  if(String(plan).includes('$400')) return 400
+  if(String(plan).includes('$100')) return 100
+  if(String(plan).includes('$45')) return 45
+  return 0
+}
+
 function formatDate(d){ return d?new Date(d).toLocaleDateString():'Lifetime' }
 function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp'; if(n<0) return 'sl'; return 'breakeven' }
 function VipBadge({user}){ if(!user) return null; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
@@ -313,6 +321,20 @@ function Home({setPage}){
       </div>
     </section>
 
+    
+    <section className="section couponSalesSection">
+      <p className="green">SPECIAL OFFERS</p>
+      <h2>Run VIP Promotions With Coupon Codes</h2>
+      <p className="centerText">
+        1000PIPS can run limited-time promotions for new members. Use coupon codes during payment proof submission to get a discounted VIP plan.
+      </p>
+      <div className="couponPromoBox">
+        <span>Example Code</span>
+        <strong>WELCOME10</strong>
+        <p>Admin can create, disable and delete coupons anytime.</p>
+      </div>
+    </section>
+
     <section className="section finalSalesCta">
       <p className="green">START TODAY</p>
       <h2>Join 1000PIPS VIP And Trade With More Structure</h2>
@@ -359,6 +381,16 @@ function Login({saveSession,setPage}){
   const[form,setForm]=useState({name:'',email:'',password:'',referralCode:new URLSearchParams(window.location.search).get('ref')||''})
   const[msg,setMsg]=useState('')
   const[loading,setLoading]=useState(false)
+  async function applyCoupon(){
+    setMsg('')
+    setCouponResult(null)
+    if(!coupon){ setMsg('Enter coupon code first.'); return }
+    try{
+      const data = await api('/api/coupons/validate',{method:'POST',body:JSON.stringify({code:coupon,planPrice:getPlanPrice(plan)})})
+      setCouponResult(data)
+      setMsg(`Coupon applied: ${data.code}. Final price: $${data.finalPrice}`)
+    }catch(err){ setMsg(err.message) }
+  }
   async function submit(e){
     e.preventDefault(); setMsg(''); setLoading(true)
     try{
@@ -371,7 +403,14 @@ function Login({saveSession,setPage}){
   }
   return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2><form className="form" onSubmit={submit}>{mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>} {mode==='register'&&<input placeholder="Referral code (optional)" value={form.referralCode} onChange={e=>setForm({...form,referralCode:e.target.value.toUpperCase()})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg&&<p className="error">{msg}</p>}<p className="switchText">{mode==='login'?'No account? ':'Already have an account? '}<button type="button" className="textBtn" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Register':'Login'}</button></p></form></section>
 }
-function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false); function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') } async function submit(e){ e.preventDefault(); setMsg(''); if(!user){ setPage('login'); return } const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(screenshot) fd.append('screenshot',screenshot); setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Note (optional)" value={note} onChange={e=>setNote(e.target.value)}/><label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
+function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false),[coupon,setCoupon]=useState(''),[couponResult,setCouponResult]=useState(null); function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') } async function submit(e){ e.preventDefault(); setMsg(''); if(!user){ setPage('login'); return } const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(couponResult){ fd.append('couponCode',couponResult.code); fd.append('originalPrice',String(couponResult.originalPrice)); fd.append('discountedPrice',String(couponResult.finalPrice)); fd.append('discountNote',`Discount ${couponResult.discount}`); } if(screenshot) fd.append('screenshot',screenshot); setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Note (optional)" value={note} onChange={e=>setNote(e.target.value)}/>
+        <div className="couponApplyBox">
+          <input placeholder="Coupon code (optional)" value={coupon} onChange={e=>setCoupon(e.target.value.toUpperCase())}/>
+          <button type="button" onClick={applyCoupon}>Apply Coupon</button>
+        </div>
+        {couponResult&&<div className="couponResultBox">
+          <strong>{couponResult.code}</strong> applied — Original: ${couponResult.originalPrice} | Discount: ${couponResult.discount} | Final: ${couponResult.finalPrice}
+        </div>}<label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
 function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div> }
 function TradeCard({trade}){ return <div className={`tradeCard ${trade.status}`}><div><h3>{trade.pair} <span>{trade.direction}</span></h3><p>{trade.category} · {trade.status.toUpperCase()}</p></div><div className="tradeLevels"><p>Entry: {trade.entry}</p><p>SL: {trade.stopLoss}</p><p>TP1: {trade.takeProfit1}</p><p>TP2: {trade.takeProfit2}</p><p>Pips: {trade.resultPips}</p></div>{trade.notes&&<pre>{trade.notes}</pre>}</div> }
 function SignalDashboard({user,setPage}){ const[stats,setStats]=useState(null),[trades,setTrades]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[user]); async function load(){ if(!user){ setMsg('Please login first.'); return } try{ setStats(await api('/api/vip/stats')); setTrades(await api('/api/vip/trades')) }catch(e){ setMsg(e.message) } } if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Dashboard is only for approved VIP members</h2></section>; return <section className="section"><p className="green">SIGNAL DASHBOARD</p><h2>Trading Performance</h2><button className="refresh" onClick={load}>Refresh Dashboard</button>{msg&&<p className="error">{msg}</p>}{stats&&<StatsCards stats={stats}/>}<div className="listGrid">{trades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}</div></section> }
@@ -434,18 +473,21 @@ function ProofGallery({limit=6}){
 function AnalysisCard({post}){ return <div className="analysisCard"><div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>{post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}</div> }
 function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
 function Admin({user,setPage}){
-  const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
+  const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[coupons,setCoupons]=useState([]),[couponForm,setCouponForm]=useState({code:'WELCOME10',discountType:'percent',discountValue:10,active:true,note:'Welcome discount'}),[coupons,setCoupons]=useState([]),[couponForm,setCouponForm]=useState({code:'WELCOME10',discountType:'percent',discountValue:10,active:true,note:'Welcome discount'}),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
   const [signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\nEntry: 3350\nSL: 3340\nTP1: 3370\nTP2: 3385',sendTelegram:true})
   const [trade,setTrade]=useState({pair:'XAUUSD',category:'Gold',direction:'BUY',entry:'3350',stopLoss:'3340',takeProfit1:'3370',takeProfit2:'3385',riskReward:'1:2',notes:'Trend continuation setup',sendTelegram:true})
   const [analysisForm,setAnalysisForm]=useState({title:'Gold Analysis - London Session',market:'Gold',bias:'Bullish',summary:'Price is holding above support and showing bullish continuation potential.',content:'Look for bullish continuation if price holds above the marked support zone. Wait for confirmation on lower timeframe before entry.',keyLevels:'Support 3340, Resistance 3370',tradePlan:'Buy dips above support. Invalidation below 3340.',visibility:'public',sendTelegram:true})
   const [analysisChart,setAnalysisChart]=useState(null),[analysisPreview,setAnalysisPreview]=useState(''),[customPips,setCustomPips]=useState({})
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
-  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,pr,refs]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/proofs'),api('/api/admin/referrals')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setProofs(pr); setAdminReferrals(refs); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
+  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,pr,refs]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setProofs(pr); setAdminReferrals(refs); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
   useEffect(()=>{ if(user?.role==='admin') loadAdmin() },[user])
   if(!user) return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
   async function approve(id){ await api(`/api/admin/payments/${id}/approve`,{method:'PUT'}); await loadAdmin() }
   async function viewShot(id){ try{ const d=await api(`/api/admin/payments/${id}/screenshot`); setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`) }catch(e){ setMsg(e.message) } }
+  async function createCoupon(e){ e.preventDefault(); try{ await api('/api/admin/coupons',{method:'POST',body:JSON.stringify(couponForm)}); setMsg('Coupon created successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function toggleCoupon(id,active){ try{ await api(`/api/admin/coupons/${id}`,{method:'PUT',body:JSON.stringify({active})}); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function deleteCoupon(id){ try{ await api(`/api/admin/coupons/${id}`,{method:'DELETE'}); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function updateReferral(id,status){ try{ await api(`/api/admin/referrals/${id}`,{method:'PUT',body:JSON.stringify({status})}); setMsg('Referral updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function removeVip(id){ await api(`/api/admin/users/${id}/remove-vip`,{method:'PUT'}); await loadAdmin() }
   async function renewVip(id){ await api(`/api/admin/users/${id}/renew-vip`,{method:'PUT',body:JSON.stringify({plan:renewPlan})}); await loadAdmin() }
@@ -475,7 +517,32 @@ function Admin({user,setPage}){
     </div>
 
     <div className="adminGrid">
-            <div className="adminBox full"><h3>Referral / Affiliate Tracking</h3>
+            
+      <div className="adminBox full"><h3>Coupon / Discount Codes</h3>
+        <form onSubmit={createCoupon} className="form compact couponAdminForm">
+          <input placeholder="Coupon code" value={couponForm.code} onChange={e=>setCouponForm({...couponForm,code:e.target.value.toUpperCase()})}/>
+          <select value={couponForm.discountType} onChange={e=>setCouponForm({...couponForm,discountType:e.target.value})}>
+            <option value="percent">Percent Discount</option>
+            <option value="fixed">Fixed USD Discount</option>
+          </select>
+          <input type="number" placeholder="Discount value" value={couponForm.discountValue} onChange={e=>setCouponForm({...couponForm,discountValue:e.target.value})}/>
+          <input placeholder="Note" value={couponForm.note} onChange={e=>setCouponForm({...couponForm,note:e.target.value})}/>
+          <label className="check"><input type="checkbox" checked={couponForm.active} onChange={e=>setCouponForm({...couponForm,active:e.target.checked})}/> Active</label>
+          <button>Create Coupon</button>
+        </form>
+        {coupons.length===0&&<p>No coupons yet.</p>}
+        {coupons.map(c=><div key={c._id} className="adminRow">
+          <strong>{c.code}</strong>
+          <p>{c.discountType}: {c.discountValue} | Active: {c.active?'YES':'NO'} | Used: {c.usageCount}</p>
+          <p>{c.note}</p>
+          <div className="rowBtns">
+            <button onClick={()=>toggleCoupon(c._id,!c.active)}>{c.active?'Disable':'Enable'}</button>
+            <button onClick={()=>deleteCoupon(c._id)}>Delete</button>
+          </div>
+        </div>)}
+      </div>
+
+      <div className="adminBox full"><h3>Referral / Affiliate Tracking</h3>
         {adminReferrals.length===0&&<p>No referrals yet.</p>}
         {adminReferrals.map(r=><div key={r._id} className="adminRow"><strong>{r.referredName || r.referredEmail}</strong><p>Referred by: {r.referrerEmail}</p><p>Status: {r.status} | Plan: {r.plan || 'Not selected yet'}</p><div className="rowBtns"><button onClick={()=>updateReferral(r._id,'pending')}>Pending</button><button onClick={()=>updateReferral(r._id,'approved')}>Approved</button><button onClick={()=>updateReferral(r._id,'paid')}>Paid</button></div></div>)}
       </div>
