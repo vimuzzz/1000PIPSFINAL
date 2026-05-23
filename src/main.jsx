@@ -306,22 +306,18 @@ function Home({setPage}){
       </div>
     </section>
 
-    
-    <section className="section dailyBlogStrategy">
-      <p className="green">DAILY MARKET ANALYSIS BLOG</p>
-      <h2>Attract New Traders With Daily Analysis</h2>
+    <section className="section professionalAnalysisCta">
+      <p className="green">MARKET INSIGHTS</p>
+      <h2>Professional Daily Market Outlook</h2>
       <p className="centerText">
-        Posting daily Gold, US30, Forex and Crypto analysis can bring new visitors and build trust before they join VIP.
-        Public analysis works like free value, while VIP analysis can be used to convert serious traders into paying members.
+        Read 1000PIPS market breakdowns with chart images, key levels, trading bias and trade plans for Gold, Forex, Indices, Crypto and Oil.
       </p>
-      <div className="blogStrategyGrid">
-        <div><h3>1</h3><p>Post daily public analysis with chart image</p></div>
-        <div><h3>2</h3><p>Share the same post to Telegram automatically</p></div>
-        <div><h3>3</h3><p>Invite readers to join VIP for signals and reports</p></div>
+      <div className="heroActions">
+        <button onClick={()=>setPage('analysis')}>View Market Analysis</button>
+        <button className="outlineBtn" onClick={()=>setPage('plans')}>Join VIP</button>
       </div>
     </section>
 
-    
     <section className="section couponSalesSection">
       <p className="green">SPECIAL OFFERS</p>
       <h2>Run VIP Promotions With Coupon Codes</h2>
