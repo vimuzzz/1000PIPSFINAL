@@ -344,6 +344,38 @@ function App(){
   </div>
 }
 
+function AnnouncementCard({item}){
+  return <div className={`announcementCard ${item.visibility==='public'?'public':'vip'}`}>
+    <div className="announcementHeader">
+      <span>{item.visibility==='public'?'PUBLIC UPDATE':'VIP ANNOUNCEMENT'}</span>
+      <small>{formatDateTime(item.createdAt)}</small>
+    </div>
+    <h3>{item.title}</h3>
+    <p>{item.message}</p>
+  </div>
+}
+function AnnouncementBoard({type='public',limit=3}){
+  const [items,setItems]=useState([])
+  const [msg,setMsg]=useState('')
+  useEffect(()=>{ load() },[type])
+  async function load(){
+    try{
+      const endpoint=type==='vip'?'/api/vip/announcements':'/api/announcements/public'
+      const data=await api(endpoint)
+      setItems(limit?data.slice(0,limit):data)
+    }catch(e){ setMsg(e.message) }
+  }
+  if(!items.length && !msg) return null
+  return <section className="announcementBoard">
+    <div className="announcementBoardTitle">
+      <div><p className="green">1000PIPS UPDATES</p><h2>{type==='vip'?'VIP Announcements':'Latest Announcements'}</h2></div>
+      <button className="refresh" onClick={load}>Refresh</button>
+    </div>
+    {msg&&<p className="error">{msg}</p>}
+    <div className="announcementGrid">{items.map(a=><AnnouncementCard key={a._id} item={a}/>)}</div>
+  </section>
+}
+
 function Home({setPage}){ 
   return <>
     <header className="premiumHero">
@@ -382,6 +414,8 @@ function Home({setPage}){
         </div>
       </div>
     </header>
+
+    <AnnouncementBoard type="public" limit={3}/>
 
     <section className="section">
       <p className="green">WHY 1000PIPS</p>
@@ -747,6 +781,7 @@ function SignalDashboard({user,setPage}){
     <h2>Trading Performance</h2>
     <div className="dashboardTopActions"><button className="refresh" onClick={load}>Refresh Dashboard</button><span>{filteredTrades.length} of {trades.length} signals showing</span></div>
     {msg&&<p className="error">{msg}</p>}
+    <AnnouncementBoard type="vip" limit={4}/>
     {stats&&<StatsCards stats={stats}/>}
     <div className="signalFilterPanel">
       <div><h3>Filter Signals</h3><p>Quickly view running trades, closed results, or specific markets.</p></div>
@@ -757,7 +792,7 @@ function SignalDashboard({user,setPage}){
     <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
   </section>
 }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementBoard type="vip" limit={5}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
@@ -833,7 +868,7 @@ function ProofGallery({limit=6}){
 function AnalysisCard({post}){ return <div className="analysisCard"><div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>{post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}</div> }
 function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
 function Admin({user,setPage}){
-  const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
+  const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[announcements,setAnnouncements]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
   const [signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\nEntry: 3350\nSL: 3340\nTP1: 3370\nTP2: 3385',sendTelegram:true})
   const [trade,setTrade]=useState({pair:'XAUUSD',category:'Gold',direction:'BUY',entry:'3350',stopLoss:'3340',takeProfit1:'3370',takeProfit2:'3385',riskReward:'1:2',notes:'Trend continuation setup',sendTelegram:true})
   const [analysisForm,setAnalysisForm]=useState({title:'Gold Analysis - London Session',market:'Gold',bias:'Bullish',summary:'Price is holding above support and showing bullish continuation potential.',content:'Look for bullish continuation if price holds above the marked support zone. Wait for confirmation on lower timeframe before entry.',keyLevels:'Support 3340, Resistance 3370',tradePlan:'Buy dips above support. Invalidation below 3340.',visibility:'public',sendTelegram:true})
@@ -842,6 +877,7 @@ function Admin({user,setPage}){
   const [coupons,setCoupons]=useState([]),[couponForm,setCouponForm]=useState({code:'',discountType:'percentage',discountValue:'10',active:true,note:''})
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
   const [memberSearch,setMemberSearch]=useState(''),[memberFilter,setMemberFilter]=useState('all')
+  const [announcementForm,setAnnouncementForm]=useState({title:'VIP Market Notice',message:'High-impact news today. Please trade carefully and wait for confirmation before entering any setup.',visibility:'vip',sendTelegram:true})
 
   const tradeTemplates=[
     {label:'Gold BUY', pair:'XAUUSD', category:'Gold', direction:'BUY', notes:'Gold bullish setup. Enter only after confirmation. Manage risk properly.'},
@@ -867,7 +903,7 @@ TP2:
 ${t.notes}`,sendTelegram:true})
     setMsg(`${t.label} template loaded. Add Entry, SL and TP levels before posting.`)
   }
-  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,pr,cp,refs]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setProofs(pr); setCoupons(cp); setAdminReferrals(refs); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
+  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,pr,cp,ann,refs]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/announcements'),api('/api/admin/referrals')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setProofs(pr); setCoupons(cp); setAnnouncements(ann); setAdminReferrals(refs); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
   useEffect(()=>{ if(user?.role==='admin') loadAdmin() },[user])
   if(!user) return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
@@ -904,6 +940,8 @@ ${t.notes}`,sendTelegram:true})
   async function updateReferral(id,status){ try{ await api(`/api/admin/referrals/${id}`,{method:'PUT',body:JSON.stringify({status})}); setMsg('Referral updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function removeVip(id){ await api(`/api/admin/users/${id}/remove-vip`,{method:'PUT'}); await loadAdmin() }
   async function renewVip(id){ await api(`/api/admin/users/${id}/renew-vip`,{method:'PUT',body:JSON.stringify({plan:renewPlan})}); await loadAdmin() }
+  async function createAnnouncement(e){ e.preventDefault(); try{ await api('/api/admin/announcements',{method:'POST',body:JSON.stringify(announcementForm)}); setMsg('Announcement posted successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function deleteAnnouncement(id){ if(!window.confirm('Delete this announcement?')) return; try{ await api(`/api/admin/announcements/${id}`,{method:'DELETE'}); setMsg('Announcement deleted.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function postSignal(e){ e.preventDefault(); try{ await api('/api/admin/signals',{method:'POST',body:JSON.stringify(signal)}); setMsg('Text signal posted successfully.'); }catch(err){ setMsg(err.message) } }
   async function addTrade(e){ e.preventDefault(); try{ await api('/api/admin/trades',{method:'POST',body:JSON.stringify(trade)}); setMsg('Trade signal added successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips)})}); setMsg('Trade result updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
