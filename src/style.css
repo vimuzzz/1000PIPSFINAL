@@ -1251,3 +1251,18 @@ footer h2{color:#00ff88}
 .announcementForm textarea{min-height:110px}
 .announcementAdminList{display:grid;gap:12px;margin-top:18px}
 @media(max-width:760px){.announcementHead{flex-direction:column;align-items:flex-start}.announcementSection{padding:0 14px}}
+
+
+.couponPopupOverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .25s ease}
+.couponPopupCard{width:min(520px,100%);background:linear-gradient(145deg,#06130d,#0d111d 65%,#050505);border:1px solid rgba(0,255,136,.35);border-radius:28px;padding:34px 28px;text-align:center;box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 50px rgba(0,255,136,.12);position:relative;overflow:hidden}
+.couponPopupCard::before{content:'';position:absolute;right:-80px;top:-80px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,255,136,.22),transparent 70%)}
+.couponPopupClose{position:absolute;right:16px;top:14px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-size:26px;line-height:1;cursor:pointer;z-index:2}
+.couponPopupTag{display:inline-block;background:#00ff88;color:#031008;font-weight:800;letter-spacing:.08em;font-size:12px;border-radius:999px;padding:9px 14px;margin-bottom:16px;position:relative;z-index:1}
+.couponPopupCard h2{font-size:38px;margin:8px 0 14px;color:#fff;position:relative;z-index:1}
+.couponPopupCode{font-size:46px;font-weight:900;color:#00ff88;letter-spacing:.08em;border:1px dashed rgba(0,255,136,.55);border-radius:18px;padding:16px;margin:18px auto;background:rgba(0,0,0,.28);position:relative;z-index:1}
+.couponPopupCard p{color:#d8e0ef;line-height:1.6;margin:0 auto 22px;max-width:390px;position:relative;z-index:1}
+.couponPopupActions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.couponPopupActions button{border:none;border-radius:14px;padding:13px 18px;background:#00d084;color:#04120b;font-weight:800;cursor:pointer}
+.couponPopupActions .outlineBtn{background:#17233a;color:#fff;border:1px solid rgba(255,255,255,.12)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.couponPopupCard{padding:30px 20px}.couponPopupCard h2{font-size:30px}.couponPopupCode{font-size:34px}.couponPopupActions button{width:100%}}

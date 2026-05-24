@@ -389,6 +389,7 @@ function App(){
 }
 
 function Home({setPage}){ 
+  const [showCouponPopup,setShowCouponPopup]=useState(true)
   return <>
     <header className="premiumHero">
       <div className="heroGlow"></div>
@@ -426,6 +427,20 @@ function Home({setPage}){
         </div>
       </div>
     </header>
+
+    {showCouponPopup&&<div className="couponPopupOverlay" onClick={()=>setShowCouponPopup(false)}>
+      <div className="couponPopupCard" onClick={e=>e.stopPropagation()}>
+        <button className="couponPopupClose" onClick={()=>setShowCouponPopup(false)}>×</button>
+        <span className="couponPopupTag">SPECIAL VIP OFFER</span>
+        <h2>Use Coupon Code</h2>
+        <div className="couponPopupCode">WELCOME10</div>
+        <p>Apply this code during payment proof submission to get your VIP discount.</p>
+        <div className="couponPopupActions">
+          <button onClick={()=>{setShowCouponPopup(false);setPage('payment')}}>Use Coupon Now</button>
+          <button className="outlineBtn" onClick={()=>setShowCouponPopup(false)}>Maybe Later</button>
+        </div>
+      </div>
+    </div>}
 
     <AnnouncementsPanel mode="public"/>
 
@@ -639,19 +654,6 @@ function Home({setPage}){
     </section>
 
     
-    <section className="section couponSalesSection">
-      <p className="green">SPECIAL OFFERS</p>
-      <h2>Run VIP Promotions With Coupon Codes</h2>
-      <p className="centerText">
-        1000PIPS can run limited-time promotions for new members. Use coupon codes during payment proof submission to get a discounted VIP plan.
-      </p>
-      <div className="couponPromoBox">
-        <span>Example Code</span>
-        <strong>WELCOME10</strong>
-        <p>Admin can create, disable and delete coupons anytime.</p>
-      </div>
-    </section>
-
     <section className="section finalSalesCta">
       <p className="green">START TODAY</p>
       <h2>Join 1000PIPS VIP And Trade With More Structure</h2>
