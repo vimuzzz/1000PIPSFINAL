@@ -886,3 +886,161 @@ footer h2{color:#00ff88}
 /* Clean Blog Copy Build Fix */
 .dailyBlogStrategy h2{color:#00ff88!important;}
 .dailyBlogStrategy .blogStrategyGrid div p{color:#f2f2f2!important;line-height:1.7!important;}
+
+/* Premium Signal Card Design Upgrade */
+.premiumSignalCard,.premiumTextSignalCard{
+  position:relative;
+  overflow:hidden;
+  background:radial-gradient(circle at top left,rgba(0,255,136,.16),transparent 34%),linear-gradient(145deg,#111,#050505 65%)!important;
+  border:1px solid rgba(0,255,136,.26)!important;
+  border-radius:26px!important;
+  padding:22px!important;
+  color:#fff!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.premiumSignalCard:before,.premiumTextSignalCard:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,255,136,.18),transparent 35%,rgba(255,255,255,.03));
+  height:4px;
+}
+.premiumSignalCard.buySignal{border-color:rgba(0,255,136,.36)!important}
+.premiumSignalCard.sellSignal{border-color:rgba(255,77,77,.36)!important;background:radial-gradient(circle at top left,rgba(255,77,77,.15),transparent 34%),linear-gradient(145deg,#111,#050505 65%)!important}
+.premiumSignalTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:18px;
+}
+.premiumSignalPair{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.premiumSignalPair h3{
+  margin:0!important;
+  color:#fff!important;
+  font-size:24px;
+  letter-spacing:.3px;
+}
+.marketIcon{
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,255,136,.13);
+  border:1px solid rgba(0,255,136,.25);
+  color:#00ff88;
+  font-size:20px;
+  font-weight:900;
+}
+.sellSignal .marketIcon{background:rgba(255,77,77,.12);border-color:rgba(255,77,77,.28);color:#ff6b6b}
+.directionBadge,.premiumStatusBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.directionBadge.buy{background:#00ff88;color:#001b0d}
+.directionBadge.sell{background:#ff4d4d;color:#fff}
+.premiumStatusBadge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff}
+.premiumStatusBadge.running,.premiumStatusBadge.active{background:rgba(0,140,255,.14);border-color:rgba(0,140,255,.35);color:#7fc8ff}
+.premiumStatusBadge.tp1-hit,.premiumStatusBadge.tp2-hit,.premiumStatusBadge.tp,.premiumStatusBadge.closed{background:rgba(0,255,136,.13);border-color:rgba(0,255,136,.35);color:#00ff88}
+.premiumStatusBadge.sl-hit,.premiumStatusBadge.sl{background:rgba(255,77,77,.14);border-color:rgba(255,77,77,.35);color:#ff7878}
+.premiumStatusBadge.break-even,.premiumStatusBadge.breakeven{background:rgba(255,191,0,.14);border-color:rgba(255,191,0,.35);color:#ffd166}
+.premiumMeta{
+  margin:10px 0 0!important;
+  color:#a9a9a9!important;
+  font-size:13px;
+}
+.premiumSignalLevels{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+.premiumSignalLevels div{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+}
+.premiumSignalLevels span,.premiumPips span{
+  display:block;
+  color:#9d9d9d;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:8px;
+}
+.premiumSignalLevels strong{
+  color:#fff;
+  font-size:18px;
+}
+.premiumPips{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content:space-between;
+  border-radius:18px;
+  padding:14px 16px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+  margin-top:12px;
+}
+.premiumPips span{margin:0}
+.premiumPips strong{font-size:22px;color:#d8d8d8}
+.premiumPips small{color:#aaa;text-align:right}
+.premiumPips.positive{background:rgba(0,255,136,.09);border-color:rgba(0,255,136,.25)}
+.premiumPips.positive strong{color:#00ff88}
+.premiumPips.negative{background:rgba(255,77,77,.09);border-color:rgba(255,77,77,.25)}
+.premiumPips.negative strong{color:#ff6b6b}
+.premiumPips.neutral{background:rgba(255,191,0,.08);border-color:rgba(255,191,0,.23)}
+.premiumPips.neutral strong{color:#ffd166}
+.premiumSignalNotes{
+  margin-top:14px;
+  background:rgba(0,0,0,.24);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+}
+.premiumSignalNotes strong{color:#00ff88;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.premiumSignalNotes pre,.premiumSignalMessage{
+  margin:10px 0 0;
+  white-space:pre-wrap;
+  color:#e4e4e4;
+  line-height:1.65;
+  font-family:inherit;
+}
+.premiumTextSignalGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
+  margin:22px 0;
+}
+.premiumSignalMessage{
+  background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:16px;
+}
+@media(max-width:760px){
+  .premiumSignalTop{flex-direction:column}
+  .premiumSignalLevels{grid-template-columns:repeat(2,1fr)}
+  .premiumPips{align-items:flex-start;flex-direction:column}
+  .premiumPips small{text-align:left}
+  .premiumSignalPair h3{font-size:21px}
+}

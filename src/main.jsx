@@ -422,24 +422,57 @@ function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.
 function TradeCard({trade}){
   const statusLabel=signalStatusLabel(trade.status, trade.resultPips)
   const statusClass=signalStatusClass(trade.status, trade.resultPips)
-  return <div className={`tradeCard ${trade.status} ${statusClass}`}>
-    <div>
-      <h3>{trade.pair} <span>{trade.direction}</span></h3>
-      <p>{trade.category} · <span className={`signalStatus ${statusClass}`}>{statusLabel}</span></p>
-      <p className="signalDate">Signal Given: {formatDateTime(trade.createdAt)}</p>
+  const direction=String(trade.direction||'').toUpperCase()
+  const isBuy=direction==='BUY'
+  const pips=Number(trade.resultPips||0)
+  const pipsText=pips>0?`+${pips}`:String(pips)
+  return <div className={`premiumSignalCard ${statusClass} ${isBuy?'buySignal':'sellSignal'}`}>
+    <div className="premiumSignalTop">
+      <div>
+        <div className="premiumSignalPair">
+          <span className="marketIcon">{isBuy?'↗':'↘'}</span>
+          <h3>{trade.pair}</h3>
+          <span className={`directionBadge ${isBuy?'buy':'sell'}`}>{direction||'SIGNAL'}</span>
+        </div>
+        <p className="premiumMeta">{trade.category} · Signal Given: {formatDateTime(trade.createdAt)}</p>
+      </div>
+      <span className={`premiumStatusBadge ${statusClass}`}>{statusLabel}</span>
     </div>
-    <div className="tradeLevels">
-      <p>Entry: {trade.entry}</p>
-      <p>SL: {trade.stopLoss}</p>
-      <p>TP1: {trade.takeProfit1}</p>
-      <p>TP2: {trade.takeProfit2}</p>
-      <p>Pips: {trade.resultPips}</p>
+
+    <div className="premiumSignalLevels">
+      <div><span>Entry</span><strong>{trade.entry}</strong></div>
+      <div><span>Stop Loss</span><strong>{trade.stopLoss}</strong></div>
+      <div><span>TP 1</span><strong>{trade.takeProfit1}</strong></div>
+      <div><span>TP 2</span><strong>{trade.takeProfit2}</strong></div>
     </div>
-    {trade.notes&&<pre>{trade.notes}</pre>}
+
+    <div className={`premiumPips ${pips>0?'positive':pips<0?'negative':'neutral'}`}>
+      <span>Result</span>
+      <strong>{pipsText} pips</strong>
+      <small>{trade.riskReward?`Risk/Reward ${trade.riskReward}`:'Risk managed signal'}</small>
+    </div>
+
+    {trade.notes&&<div className="premiumSignalNotes"><strong>Trade Notes</strong><pre>{trade.notes}</pre></div>}
+  </div>
+}
+
+function TextSignalCard({signal}){
+  return <div className="premiumTextSignalCard">
+    <div className="premiumSignalTop">
+      <div>
+        <div className="premiumSignalPair">
+          <span className="marketIcon">⚡</span>
+          <h3>{signal.title}</h3>
+        </div>
+        <p className="premiumMeta">Signal Given: {formatDateTime(signal.createdAt)}</p>
+      </div>
+      <span className="premiumStatusBadge running">VIP SIGNAL</span>
+    </div>
+    <pre className="premiumSignalMessage">{signal.message}</pre>
   </div>
 }
 function SignalDashboard({user,setPage}){ const[stats,setStats]=useState(null),[trades,setTrades]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[user]); async function load(){ if(!user){ setMsg('Please login first.'); return } try{ setStats(await api('/api/vip/stats')); setTrades(await api('/api/vip/trades')) }catch(e){ setMsg(e.message) } } if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Dashboard is only for approved VIP members</h2></section>; return <section className="section"><p className="green">SIGNAL DASHBOARD</p><h2>Trading Performance</h2><button className="refresh" onClick={load}>Refresh Dashboard</button>{msg&&<p className="error">{msg}</p>}{stats&&<StatsCards stats={stats}/>}<div className="listGrid">{trades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}</div></section> }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="cards">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><div key={s._id} className="card"><h3>{s.title}</h3><p className="signalDate">Signal Given: {formatDateTime(s.createdAt)}</p><pre>{s.message}</pre></div>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
