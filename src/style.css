@@ -1044,3 +1044,45 @@ footer h2{color:#00ff88}
   .premiumPips small{text-align:left}
   .premiumSignalPair h3{font-size:21px}
 }
+
+
+.quickTemplateBox{
+  border:1px solid rgba(0,255,136,.18);
+  background:linear-gradient(135deg,rgba(0,255,136,.08),rgba(255,255,255,.03));
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0 16px;
+}
+.quickTemplateHead{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:12px;
+}
+.quickTemplateHead strong{color:#00ff88;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.quickTemplateHead small{color:#aaa;text-align:right;line-height:1.4}
+.quickTemplateGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.templateBtn{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.4px;
+  cursor:pointer;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+}
+.templateBtn.buy{background:rgba(0,255,136,.12);border-color:rgba(0,255,136,.3);color:#00ff88}
+.templateBtn.sell{background:rgba(255,77,77,.12);border-color:rgba(255,77,77,.3);color:#ff7777}
+.templateBtn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+@media(max-width:760px){
+  .quickTemplateHead{flex-direction:column}
+  .quickTemplateHead small{text-align:left}
+  .quickTemplateGrid{grid-template-columns:1fr}
+}
