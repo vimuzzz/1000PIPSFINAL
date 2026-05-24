@@ -1164,3 +1164,16 @@ footer h2{color:#00ff88}
 .expiryRow{
   border-top-color:rgba(255,209,102,.22)!important;
 }
+
+/* Signal filter system */
+.dashboardTopActions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0 18px}
+.dashboardTopActions span{color:#a7a7a7;font-size:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:10px 14px;border-radius:999px}
+.signalFilterPanel{margin:22px 0;padding:18px;border-radius:22px;background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(0,0,0,.35));border:1px solid rgba(255,215,0,.18);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.signalFilterPanel h3{margin:0 0 6px;color:#fff;font-size:20px}
+.signalFilterPanel p{margin:0 0 14px;color:#b8b8b8}
+.signalFilterButtons{display:flex;gap:10px;flex-wrap:wrap}
+.signalFilterButtons button{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#f5f5f5;border-radius:999px;padding:10px 13px;font-weight:800;cursor:pointer;transition:.2s ease;display:flex;align-items:center;gap:7px}
+.signalFilterButtons button:hover{transform:translateY(-1px);border-color:rgba(255,215,0,.45)}
+.signalFilterButtons button.active{background:linear-gradient(135deg,#f8d34a,#b88700);color:#090909;border-color:rgba(255,215,0,.8);box-shadow:0 8px 25px rgba(248,211,74,.18)}
+.signalFilterButtons small{min-width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);color:inherit;font-size:12px;padding:0 6px}
+@media(max-width:700px){.dashboardTopActions{align-items:flex-start}.signalFilterButtons button{font-size:13px;padding:9px 11px}.signalFilterPanel{padding:14px}}
