@@ -1234,19 +1234,20 @@ footer h2{color:#00ff88}
 .weeklyPosterActions button:last-child{background:#1a2740;color:#fff;border:1px solid rgba(255,255,255,.08)}
 @media (max-width:760px){.weeklyPosterHeader{flex-direction:column}.weeklyHighlightRow{grid-template-columns:1fr}.weeklyPosterStatGrid{grid-template-columns:repeat(2,1fr)}.weeklyPosterActions button{width:100%}}
 
-.announcementBoard{margin:34px auto;max-width:1180px;padding:0 20px}
-.announcementBoardTitle{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:18px}
-.announcementBoardTitle h2{margin:4px 0 0;color:#fff}
-.announcementGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
-.announcementCard{background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.18);position:relative;overflow:hidden}
-.announcementCard::before{content:'';position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,#00ff9d,#ffd54f)}
-.announcementCard.vip::before{background:linear-gradient(90deg,#00ff9d,#00a3ff)}
-.announcementCard.public::before{background:linear-gradient(90deg,#ffd54f,#00ff9d)}
-.announcementHeader{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
-.announcementHeader span{font-size:11px;letter-spacing:.14em;color:#7efcc6;font-weight:800}
-.announcementHeader small{color:#8fa1bd;font-size:12px}
-.announcementCard h3{margin:0 0 10px;color:#fff;font-size:20px}
-.announcementCard p{margin:0;color:#d6deed;line-height:1.6;white-space:pre-wrap}
-.announcementAdminForm{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:16px;margin-bottom:18px}
-.announcementAdminRow p{white-space:pre-wrap}
-@media(max-width:760px){.announcementBoardTitle{flex-direction:column;align-items:flex-start}.announcementBoardTitle .refresh{width:100%}}
+.announcementSection{max-width:1180px;margin:28px auto;padding:0 20px}
+.announcementHead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px}
+.announcementHead h2{margin:0;color:#fff}
+.announcementGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.announcementCard{background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.announcementCard.vip{border-color:rgba(0,245,155,.22)}
+.announcementCard.public{border-color:rgba(255,213,79,.22)}
+.announcementCard>div{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.announcementCard span{color:#00f59b;font-size:12px;font-weight:800;letter-spacing:.12em}
+.announcementCard small{color:#8ea0bd;font-size:12px}
+.announcementCard h3{margin:0 0 10px;color:#fff;font-size:19px}
+.announcementCard p{margin:0;color:#d8e0ef;line-height:1.55;white-space:pre-wrap}
+.vipAnnouncements{padding:0;margin:18px 0 26px;max-width:none}
+.announcementAdminBox{border-color:rgba(0,245,155,.25)!important;background:linear-gradient(135deg,rgba(0,245,155,.07),rgba(255,255,255,.03))!important}
+.announcementForm textarea{min-height:110px}
+.announcementAdminList{display:grid;gap:12px;margin-top:18px}
+@media(max-width:760px){.announcementHead{flex-direction:column;align-items:flex-start}.announcementSection{padding:0 14px}}
