@@ -79,6 +79,15 @@ function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp2'; 
 function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(user.daysRemaining)) return <div className="warningBadge">VIP expires in {user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'} · Renew soon</div>; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
+function analysisUpdateStatusLabel(status='updated'){
+  const map={running:'Running According To Analysis',target_hit:'Target Hit',invalidated:'Invalidated By News / Market Change',failed:'Analysis Failed',updated:'Analysis Updated'}
+  return map[String(status||'updated')] || 'Analysis Updated'
+}
+function analysisUpdateStatusIcon(status='updated'){
+  const map={running:'🟡',target_hit:'✅',invalidated:'⚠️',failed:'🔴',updated:'📌'}
+  return map[String(status||'updated')] || '📌'
+}
+
 
 function pickWeeklyHighlightTrades(trades=[], limit=5){
   return [...(Array.isArray(trades)?trades:[])]
@@ -879,7 +888,17 @@ function ProofGallery({limit=6}){
   </section>
 }
 
-function AnalysisCard({post}){ return <div className="analysisCard"><div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>{post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}</div> }
+function AnalysisCard({post}){
+  const updates = Array.isArray(post.updates) ? post.updates : []
+  const visibleUpdates = updates.filter(u=>post.visibility==='public' ? u.visibility==='public' : true)
+  const latest = visibleUpdates[0]
+  return <div className="analysisCard">
+    <div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>
+    {latest&&<div className={`analysisLatestUpdate ${latest.status}`}><strong>{analysisUpdateStatusIcon(latest.status)} Latest Update: {analysisUpdateStatusLabel(latest.status)}</strong><p>{latest.comment}</p><small>{formatDateTime(latest.createdAt)}</small></div>}
+    {post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}
+    {visibleUpdates.length>0&&<div className="analysisUpdateTimeline"><h4>Update History</h4>{visibleUpdates.map((u,i)=><div className={`analysisUpdateItem ${u.status}`} key={u._id||i}><span>{analysisUpdateStatusIcon(u.status)}</span><div><strong>{analysisUpdateStatusLabel(u.status)}</strong><p>{u.comment}</p><small>{formatDateTime(u.createdAt)} · {u.visibility}</small></div></div>)}</div>}
+  </div>
+}
 function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
 function Admin({user,setPage}){
   const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[textSignals,setTextSignals]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
@@ -887,6 +906,7 @@ function Admin({user,setPage}){
   const [trade,setTrade]=useState({pair:'XAUUSD',category:'Gold',direction:'BUY',entry:'3350',stopLoss:'3340',takeProfit1:'3370',takeProfit2:'3385',riskReward:'1:2',notes:'Trend continuation setup',sendTelegram:true})
   const [analysisForm,setAnalysisForm]=useState({title:'Gold Analysis - London Session',market:'Gold',bias:'Bullish',summary:'Price is holding above support and showing bullish continuation potential.',content:'Look for bullish continuation if price holds above the marked support zone. Wait for confirmation on lower timeframe before entry.',keyLevels:'Support 3340, Resistance 3370',tradePlan:'Buy dips above support. Invalidation below 3340.',visibility:'public',sendTelegram:true})
   const [analysisChart,setAnalysisChart]=useState(null),[analysisPreview,setAnalysisPreview]=useState(''),[customPips,setCustomPips]=useState({})
+  const [activeAnalysisUpdate,setActiveAnalysisUpdate]=useState(null),[analysisUpdateForm,setAnalysisUpdateForm]=useState({status:'running',comment:'Running according to our analysis. Waiting for next confirmation.',visibility:'public',sendTelegram:true})
   const [editingTrade,setEditingTrade]=useState(null)
   const [coupons,setCoupons]=useState([]),[couponForm,setCouponForm]=useState({code:'',discountType:'percentage',discountValue:'10',active:true,note:''})
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
@@ -997,6 +1017,16 @@ ${t.notes}`,sendTelegram:true})
   async function deleteProof(id){ await api(`/api/admin/proofs/${id}`,{method:'DELETE'}); await loadAdmin() }
 
   async function postAnalysis(e){ e.preventDefault(); try{ const fd=new FormData(); Object.entries(analysisForm).forEach(([k,v])=>fd.append(k, String(v))); if(analysisChart) fd.append('chartImage',analysisChart); await api('/api/admin/analysis',{method:'POST',body:fd}); setMsg('Analysis posted. If Telegram checkbox is enabled, chart was sent to channel too.'); setAnalysisChart(null); setAnalysisPreview(''); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function postAnalysisUpdate(e,id){
+    e.preventDefault()
+    try{
+      await api(`/api/admin/analysis/${id}/update`,{method:'POST',body:JSON.stringify(analysisUpdateForm)})
+      setMsg('Analysis update added successfully.')
+      setActiveAnalysisUpdate(null)
+      setAnalysisUpdateForm({status:'running',comment:'Running according to our analysis. Waiting for next confirmation.',visibility:'public',sendTelegram:true})
+      await loadAdmin()
+    }catch(err){ setMsg(err.message) }
+  }
   async function deleteAnalysis(id){ await api(`/api/admin/analysis/${id}`,{method:'DELETE'}); await loadAdmin() }
   return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Telegram Analysis Image Posting + Full Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.toLowerCase().includes('success')||msg.toLowerCase().includes('refreshed')||msg.toLowerCase().includes('saved')||msg.toLowerCase().includes('sent')||msg.toLowerCase().includes('posted')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal" onClick={()=>setViewer(null)}><div className="modalInner"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div></div>}
     {report?.stats && <div><h3 className="sectionTitle">Performance Summary</h3><StatsCards stats={report.stats}/></div>}
@@ -1108,8 +1138,8 @@ ${t.notes}`,sendTelegram:true})
         {proofs.map(p=><div key={p._id} className="adminRow"><strong>{p.title}</strong><p>{p.category} · {p.visibility}</p>{p.proofImageData&&<img className="miniChart" src={imgSrcFromProof(p)} alt={p.title}/>}<div className="rowBtns"><button onClick={()=>deleteProof(p._id)}>Delete</button></div></div>)}
       </div>
 
-      <div className="adminBox full"><h3>Published Analysis Posts</h3>{analysis.length===0&&<p>No analysis posts yet.</p>}{analysis.map(post=><div key={post._id} className="adminRow"><strong>{post.title}</strong><p>{post.market} · {post.bias} · {post.visibility}</p>{post.chartImageData&&<img className="miniChart" src={imgSrcFromPost(post)} alt={post.title}/>}<div className="rowBtns"><button onClick={()=>deleteAnalysis(post._id)}>Delete</button></div></div>)}</div>
-      <div className="adminBox full"><h3>Archived Reports</h3>{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p><p>Created: {formatDateTime(r.createdAt)}</p><div className="rowBtns"><button onClick={()=>deleteArchiveReport(r._id)}>Delete Archive Report</button></div></div>)}</div>
+      <div className="adminBox full"><h3>Published Analysis Posts</h3>{analysis.length===0&&<p>No analysis posts yet.</p>}{analysis.map(post=>{ const latest=Array.isArray(post.updates)&&post.updates.length?post.updates[0]:null; return <div key={post._id} className="adminRow"><strong>{post.title}</strong><p>{post.market} · {post.bias} · {post.visibility}</p>{latest&&<div className={`analysisLatestUpdate adminMini ${latest.status}`}><strong>{analysisUpdateStatusIcon(latest.status)} {analysisUpdateStatusLabel(latest.status)}</strong><p>{latest.comment}</p><small>{formatDateTime(latest.createdAt)}</small></div>}{post.chartImageData&&<img className="miniChart" src={imgSrcFromPost(post)} alt={post.title}/>}<div className="rowBtns"><button onClick={()=>setActiveAnalysisUpdate(activeAnalysisUpdate===post._id?null:post._id)}>Add Update</button><button onClick={()=>deleteAnalysis(post._id)}>Delete</button></div>{activeAnalysisUpdate===post._id&&<form onSubmit={e=>postAnalysisUpdate(e,post._id)} className="form compact analysisUpdateForm"><select value={analysisUpdateForm.status} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,status:e.target.value})}><option value="running">Running According To Analysis</option><option value="target_hit">Target Hit</option><option value="invalidated">Invalidated By News / Market Change</option><option value="failed">Analysis Failed</option><option value="updated">General Update</option></select><textarea rows="4" placeholder="Write update comment for members" value={analysisUpdateForm.comment} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,comment:e.target.value})}/><select value={analysisUpdateForm.visibility} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,visibility:e.target.value})}><option value="public">Public Update</option><option value="vip">VIP Only Update</option></select><label className="check"><input type="checkbox" checked={analysisUpdateForm.sendTelegram} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,sendTelegram:e.target.checked})}/> Send update to Telegram</label><div className="rowBtns"><button>Add Analysis Update</button><button type="button" onClick={()=>setActiveAnalysisUpdate(null)}>Cancel</button></div></form>}{Array.isArray(post.updates)&&post.updates.length>0&&<div className="analysisUpdateTimeline adminTimeline"><h4>Update History</h4>{post.updates.map((u,i)=><div className={`analysisUpdateItem ${u.status}`} key={u._id||i}><span>{analysisUpdateStatusIcon(u.status)}</span><div><strong>{analysisUpdateStatusLabel(u.status)}</strong><p>{u.comment}</p><small>{formatDateTime(u.createdAt)} · {u.visibility}</small></div></div>)}</div>}</div>})}</div>
+      <div className="adminBox full"><h3>Archived Reports</h3>{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p><p>Created: {formatDateTime(r.createdAt)}</p><div className="rowBtns"><button className="dangerDeleteBtn" onClick={()=>deleteArchiveReport(r._id)}>Delete Report</button></div></div>)}</div>
     </div>
   </section>
 }
