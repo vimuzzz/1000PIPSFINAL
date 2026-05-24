@@ -80,6 +80,213 @@ function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
 
+function pickWeeklyHighlightTrades(trades=[], limit=5){
+  return [...(Array.isArray(trades)?trades:[])]
+    .filter(t=>String(t.status||'').toLowerCase()!=='active' && String(t.status||'').toLowerCase()!=='running')
+    .sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0))
+    .slice(0,limit)
+}
+function drawCanvasRoundRect(ctx,x,y,w,h,r,fill){
+  const radius=Math.min(r,w/2,h/2)
+  ctx.beginPath()
+  ctx.moveTo(x+radius,y)
+  ctx.arcTo(x+w,y,x+w,y+h,radius)
+  ctx.arcTo(x+w,y+h,x,y+h,radius)
+  ctx.arcTo(x,y+h,x,y,radius)
+  ctx.arcTo(x,y,x+w,y,radius)
+  ctx.closePath()
+  if(fill) ctx.fill()
+}
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines=4){
+  const words=String(text||'').split(/\s+/).filter(Boolean)
+  let line=''
+  let lines=[]
+  words.forEach(word=>{
+    const test=line?line+' '+word:word
+    if(ctx.measureText(test).width>maxWidth && line){
+      lines.push(line)
+      line=word
+    }else line=test
+  })
+  if(line) lines.push(line)
+  const finalLines=lines.slice(0,maxLines)
+  if(lines.length>maxLines && finalLines.length){
+    let last=finalLines[finalLines.length-1]
+    while(ctx.measureText(last+'…').width>maxWidth && last.length>0) last=last.slice(0,-1)
+    finalLines[finalLines.length-1]=last+'…'
+  }
+  finalLines.forEach((ln,i)=>ctx.fillText(ln,x,y+(i*lineHeight)))
+  return y + (finalLines.length*lineHeight)
+}
+function buildWeeklyReportText(report,trades=[]){
+  if(report?.reportText) return report.reportText
+  const stats=report?.stats||{}
+  const highlights=pickWeeklyHighlightTrades(trades,5)
+  const lines=[
+    '1000PIPS PERFORMANCE REPORT',
+    `Weekly Pips: ${stats.weeklyPips ?? 0}`,
+    `Win Rate: ${stats.winRate ?? 0}%`,
+    `Wins: ${stats.wins ?? 0}`,
+    `Losses: ${stats.losses ?? 0}`,
+    `Total Pips: ${stats.totalPips ?? 0}`,
+    ''
+  ]
+  if(highlights.length){
+    lines.push('Recent Trade Updates:')
+    highlights.forEach(t=>{
+      const p=Number(t.resultPips||0)
+      lines.push(`• ${t.pair} ${t.direction} - ${signalStatusLabel(t.status,t.resultPips)} (${p>0?'+':''}${p} pips)`)
+    })
+  }
+  lines.push('', 'Trade with proper risk management.')
+  return lines.join('\n')
+}
+async function copyTextToClipboard(text){
+  if(navigator?.clipboard?.writeText) return navigator.clipboard.writeText(text)
+  const area=document.createElement('textarea')
+  area.value=text
+  document.body.appendChild(area)
+  area.select()
+  document.execCommand('copy')
+  document.body.removeChild(area)
+}
+function downloadWeeklyPerformancePoster(report,trades=[]){
+  if(!report) return
+  const stats=report.stats||{}
+  const highlights=pickWeeklyHighlightTrades(trades,5)
+  const canvas=document.createElement('canvas')
+  canvas.width=1080
+  canvas.height=1350
+  const ctx=canvas.getContext('2d')
+  const gradient=ctx.createLinearGradient(0,0,1080,1350)
+  gradient.addColorStop(0,'#050816')
+  gradient.addColorStop(0.5,'#0b1223')
+  gradient.addColorStop(1,'#04120b')
+  ctx.fillStyle=gradient
+  ctx.fillRect(0,0,canvas.width,canvas.height)
+  ctx.fillStyle='rgba(0,255,163,0.08)'
+  ctx.beginPath(); ctx.arc(940,180,160,0,Math.PI*2); ctx.fill()
+  ctx.fillStyle='rgba(255,215,0,0.06)'
+  ctx.beginPath(); ctx.arc(180,1160,140,0,Math.PI*2); ctx.fill()
+
+  ctx.fillStyle='#00f59b'
+  ctx.font='700 34px Arial'
+  ctx.fillText('1000PIPS',70,90)
+  ctx.fillStyle='#ffffff'
+  ctx.font='700 62px Arial'
+  ctx.fillText('WEEKLY PERFORMANCE',70,165)
+  ctx.fillStyle='#aab3c5'
+  ctx.font='28px Arial'
+  ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),70,210)
+
+  const statItems=[
+    ['Weekly Pips', String(stats.weeklyPips ?? 0)],
+    ['Win Rate', `${stats.winRate ?? 0}%`],
+    ['Wins', String(stats.wins ?? 0)],
+    ['Losses', String(stats.losses ?? 0)],
+    ['Total Pips', String(stats.totalPips ?? 0)],
+    ['Active Trades', String(stats.activeTrades ?? 0)]
+  ]
+  let sx=70, sy=260, sw=285, sh=120, gap=20
+  statItems.forEach((item,i)=>{
+    const x=sx + (i%2)*(sw+gap)
+    const y=sy + Math.floor(i/2)*(sh+gap)
+    ctx.fillStyle='rgba(255,255,255,0.06)'
+    drawCanvasRoundRect(ctx,x,y,sw,sh,24,true)
+    ctx.fillStyle='#7efcc6'
+    ctx.font='24px Arial'
+    ctx.fillText(item[0],x+24,y+38)
+    ctx.fillStyle='#ffffff'
+    ctx.font='700 42px Arial'
+    ctx.fillText(item[1],x+24,y+86)
+  })
+
+  ctx.fillStyle='rgba(255,255,255,0.06)'
+  drawCanvasRoundRect(ctx,660,260,350,400,24,true)
+  ctx.fillStyle='#ffd54f'
+  ctx.font='700 30px Arial'
+  ctx.fillText('Top Updates',690,308)
+  if(!highlights.length){
+    ctx.fillStyle='#d8e0ef'
+    ctx.font='26px Arial'
+    ctx.fillText('No closed trades yet.',690,360)
+  }else{
+    highlights.forEach((t,idx)=>{
+      const y=360+(idx*58)
+      const p=Number(t.resultPips||0)
+      ctx.fillStyle='#ffffff'
+      ctx.font='700 25px Arial'
+      ctx.fillText(`${t.pair} ${t.direction}`,690,y)
+      ctx.fillStyle='#aab3c5'
+      ctx.font='22px Arial'
+      ctx.fillText(signalStatusLabel(t.status,t.resultPips),690,y+26)
+      ctx.fillStyle=p>0?'#00f59b':p<0?'#ff6a6a':'#ffd54f'
+      ctx.font='700 24px Arial'
+      ctx.fillText(`${p>0?'+':''}${p} pips`,910,y+12)
+    })
+  }
+
+  ctx.fillStyle='rgba(255,255,255,0.06)'
+  drawCanvasRoundRect(ctx,70,700,940,500,24,true)
+  ctx.fillStyle='#7efcc6'
+  ctx.font='700 30px Arial'
+  ctx.fillText('Weekly Summary',100,748)
+  ctx.fillStyle='#dfe7f5'
+  ctx.font='25px Arial'
+  wrapCanvasText(ctx, buildWeeklyReportText(report,trades), 100, 800, 880, 34, 10)
+
+  ctx.fillStyle='rgba(0,0,0,0.24)'
+  drawCanvasRoundRect(ctx,70,1220,940,72,18,true)
+  ctx.fillStyle='#e9eef8'
+  ctx.font='24px Arial'
+  ctx.fillText('Instagram • Telegram • Members Report',100,1264)
+  ctx.textAlign='right'
+  ctx.fillStyle='#8ea0bd'
+  ctx.fillText('Trade with proper risk management',980,1264)
+  ctx.textAlign='left'
+
+  const link=document.createElement('a')
+  link.href=canvas.toDataURL('image/png')
+  link.download=`1000pips-weekly-performance-${new Date().toISOString().slice(0,10)}.png`
+  link.click()
+}
+function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
+  const stats=report?.stats || {weeklyPips:report?.totalPips||0, winRate:report?.winRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.activeTrades||0}
+  const normalizedReport={...report,stats}
+  const highlights=pickWeeklyHighlightTrades(trades, compact?3:5)
+  const title=report?.title || (report?.period?`${report.period} Performance Report`:'Weekly Performance Report')
+  const subDate=new Date(report?.createdAt||Date.now()).toLocaleDateString()
+  return <div className={compact?'weeklyPosterCard compact':'weeklyPosterCard'}>
+    <div className="weeklyPosterHeader">
+      <div>
+        <span className="weeklyPosterKicker">1000PIPS PERFORMANCE</span>
+        <h3>{title}</h3>
+        <p>{report?.period || 'Weekly'} · {subDate}</p>
+      </div>
+      <div className="weeklyPosterBrand">1000PIPS</div>
+    </div>
+    <div className="weeklyPosterStatGrid">
+      <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
+      <div><span>Win Rate</span><strong>{stats.winRate ?? 0}%</strong></div>
+      <div><span>Wins</span><strong>{stats.wins ?? 0}</strong></div>
+      <div><span>Losses</span><strong>{stats.losses ?? 0}</strong></div>
+      <div><span>Total Pips</span><strong>{stats.totalPips ?? 0}</strong></div>
+      <div><span>Active Trades</span><strong>{stats.activeTrades ?? 0}</strong></div>
+    </div>
+    {!!highlights.length && !compact && <div className="weeklyPosterHighlights">
+      <h4>Top Trade Updates</h4>
+      <div className="weeklyHighlightList">
+        {highlights.map(t=>{ const p=Number(t.resultPips||0); return <div className="weeklyHighlightRow" key={t._id||`${t.pair}-${t.createdAt}`}><strong>{t.pair} {t.direction}</strong><span>{signalStatusLabel(t.status,t.resultPips)}</span><b className={p>0?'positive':p<0?'negative':'neutral'}>{p>0?'+':''}{p} pips</b></div> })}
+      </div>
+    </div>}
+    <div className="weeklyPosterNarrative">
+      <h4>Report Summary</h4>
+      <pre>{buildWeeklyReportText(normalizedReport,trades)}</pre>
+    </div>
+    {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades)}>Download Performance Image</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
+  </div>
+}
+
 function App(){
   const [page,setPage]=useState('home')
   const [user,setUser]=useState(null)
@@ -552,7 +759,24 @@ function ReferralCenter({user,setPage}){
   </section>
 }
 
-function Archive({user,setPage}){ const[reports,setReports]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[user]); async function load(){ if(!user) return; try{ setReports(await api('/api/vip/reports')) }catch(e){ setMsg(e.message) } } if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Performance Archive is members-only</h2></section>; return <section className="section"><p className="green">PERFORMANCE ARCHIVE</p><h2>Past Weekly & Monthly Reports</h2><button className="refresh" onClick={load}>Refresh Archive</button>{msg&&<p className="error">{msg}</p>}<div className="cards">{reports.length===0&&<p>No archived reports yet.</p>}{reports.map(r=><div key={r._id} className="card"><h3>{r.title}</h3><p>{r.period} · {new Date(r.createdAt).toLocaleDateString()}</p><p><strong>Pips:</strong> {r.totalPips}</p><p><strong>Win Rate:</strong> {r.winRate}%</p><p><strong>Wins/Losses:</strong> {r.wins}/{r.losses}</p><pre>{r.reportText}</pre></div>)}</div></section> }
+function Archive({user,setPage}){
+  const[reports,setReports]=useState([]),[msg,setMsg]=useState('')
+  useEffect(()=>{ load() },[user])
+  async function load(){ if(!user) return; try{ setReports(await api('/api/vip/reports')) }catch(e){ setMsg(e.message) } }
+  if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>
+  if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Performance Archive is members-only</h2></section>
+  return <section className="section">
+    <p className="green">PERFORMANCE ARCHIVE</p>
+    <h2>Past Weekly & Monthly Reports</h2>
+    <button className="refresh" onClick={load}>Refresh Archive</button>
+    {msg&&<p className="error">{msg}</p>}
+    <div className="archivePosterGrid">
+      {reports.length===0&&<p>No archived reports yet.</p>}
+      {reports.map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>)}
+    </div>
+  </section>
+}
+
 
 function ProofGallery({limit=6}){
   const [proofs,setProofs]=useState([])
@@ -680,6 +904,7 @@ ${t.notes}`,sendTelegram:true})
   return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Telegram Analysis Image Posting + Full Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.toLowerCase().includes('success')||msg.toLowerCase().includes('refreshed')||msg.toLowerCase().includes('saved')||msg.toLowerCase().includes('sent')||msg.toLowerCase().includes('posted')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal" onClick={()=>setViewer(null)}><div className="modalInner"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div></div>}
     {report?.stats && <div><h3 className="sectionTitle">Performance Summary</h3><StatsCards stats={report.stats}/></div>}
     <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button><button onClick={testEmail}>Test Email Notification</button></div>
+    {report && <WeeklyPerformanceStudio report={report} trades={trades} showActions={true} compact={false}/>}
     {report?.reportText && <div className="card"><h3>Current Weekly Report</h3><pre>{report.reportText}</pre></div>}
     
     <div className="emailNoticeBox">
