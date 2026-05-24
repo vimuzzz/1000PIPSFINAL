@@ -118,8 +118,22 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines=4){
   finalLines.forEach((ln,i)=>ctx.fillText(ln,x,y+(i*lineHeight)))
   return y + (finalLines.length*lineHeight)
 }
+
+function cleanReportText(text=''){
+  return String(text||'')
+    .replace(/<br\s*\/?>/gi,'\n')
+    .replace(/<\/p>/gi,'\n')
+    .replace(/<[^>]+>/g,'')
+    .replace(/&nbsp;/g,' ')
+    .replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"')
+    .replace(/&#39;/g,"'")
+}
+
 function buildWeeklyReportText(report,trades=[]){
-  if(report?.reportText) return report.reportText
+  if(report?.reportText) return cleanReportText(report.reportText)
   const stats=report?.stats||{}
   const highlights=pickWeeklyHighlightTrades(trades,5)
   const lines=[
@@ -984,7 +998,7 @@ ${t.notes}`,sendTelegram:true})
     {report?.stats && <div><h3 className="sectionTitle">Performance Summary</h3><StatsCards stats={report.stats}/></div>}
     <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Weekly', true)}>Save Weekly + Email VIP Members</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button><button onClick={testEmail}>Test Email Notification</button></div>
     {report && <WeeklyPerformanceStudio report={report} trades={trades} showActions={true} compact={false}/>}
-    {report?.reportText && <div className="card"><h3>Current Weekly Report</h3><pre>{report.reportText}</pre></div>}
+    {report?.reportText && <div className="card"><h3>Current Weekly Report</h3><pre>{cleanReportText(report.reportText)}</pre></div>}
     
     <div className="emailNoticeBox">
       <h3>Email Notifications</h3>
