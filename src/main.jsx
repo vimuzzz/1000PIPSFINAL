@@ -960,7 +960,18 @@ ${t.notes}`,sendTelegram:true})
   async function deleteTrade(id){ if(!window.confirm('Hide this trade from dashboard? It will stay in report history and pips tracking.')) return; try{ await api(`/api/admin/trades/${id}`,{method:'DELETE'}); setMsg('Trade hidden from dashboard. Report history and pips tracking are kept.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function testEmail(){ try{ await api('/api/admin/test-email',{method:'POST',body:JSON.stringify({})}); setMsg('Test email sent. Check inbox/spam.'); }catch(err){ setMsg(err.message) } }
   async function sendReportTelegram(){ try{ await api('/api/admin/report/send-telegram',{method:'POST'}); setMsg('Weekly report sent to Telegram.'); }catch(err){ setMsg(err.message) } }
-  async function archiveCurrent(period){ try{ await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`})}); setMsg(`${period} report saved to archive.`); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function archiveCurrent(period, sendVipEmail=false){
+    try{
+      const data = await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`, sendVipEmail})})
+      if(sendVipEmail){
+        const summary = data?.emailSummary
+        setMsg(`${period} report saved and emailed to VIP members.${summary ? ` Sent: ${summary.sent}, Skipped: ${summary.skipped}, Failed: ${summary.failed}` : ''}`)
+      }else{
+        setMsg(`${period} report saved to archive.`)
+      }
+      await loadAdmin()
+    }catch(err){ setMsg(err.message) }
+  }
   function onAnalysisChart(e){ const f=e.target.files[0]; setAnalysisChart(f||null); setAnalysisPreview(f?URL.createObjectURL(f):'') }
 
   function onProofImage(e){ const f=e.target.files[0]; setProofImage(f||null); setProofPreview(f?URL.createObjectURL(f):'') }
@@ -971,13 +982,13 @@ ${t.notes}`,sendTelegram:true})
   async function deleteAnalysis(id){ await api(`/api/admin/analysis/${id}`,{method:'DELETE'}); await loadAdmin() }
   return <section className="section"><p className="green">ADMIN DASHBOARD</p><h2>Telegram Analysis Image Posting + Full Management</h2><button className="refresh" onClick={loadAdmin}>Refresh Admin Data</button>{msg&&<p className={msg.toLowerCase().includes('success')||msg.toLowerCase().includes('refreshed')||msg.toLowerCase().includes('saved')||msg.toLowerCase().includes('sent')||msg.toLowerCase().includes('posted')?'success':'error'}>{msg}</p>}{viewer&&<div className="modal" onClick={()=>setViewer(null)}><div className="modalInner"><button onClick={()=>setViewer(null)}>Close</button><img src={viewer}/></div></div>}
     {report?.stats && <div><h3 className="sectionTitle">Performance Summary</h3><StatsCards stats={report.stats}/></div>}
-    <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button><button onClick={testEmail}>Test Email Notification</button></div>
+    <div className="buttonRow"><button onClick={()=>archiveCurrent('Weekly')}>Save Weekly Archive</button><button onClick={()=>archiveCurrent('Weekly', true)}>Save Weekly + Email VIP Members</button><button onClick={()=>archiveCurrent('Monthly')}>Save Monthly Archive</button><button onClick={sendReportTelegram}>Send Report to Telegram</button><button onClick={testEmail}>Test Email Notification</button></div>
     {report && <WeeklyPerformanceStudio report={report} trades={trades} showActions={true} compact={false}/>}
     {report?.reportText && <div className="card"><h3>Current Weekly Report</h3><pre>{report.reportText}</pre></div>}
     
     <div className="emailNoticeBox">
       <h3>Email Notifications</h3>
-      <p>Email notifications are sent when a user registers, submits payment proof, and when admin approves VIP access.</p>
+      <p>Email notifications are sent when a user registers, submits payment proof, when admin approves VIP access, and now when you save a weekly report with the VIP email option.</p>
       <p>To activate emails, add SMTP variables in Render Environment and redeploy backend.</p>
     </div>
 
