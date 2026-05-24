@@ -150,34 +150,50 @@ async function copyTextToClipboard(text){
   document.execCommand('copy')
   document.body.removeChild(area)
 }
-function downloadWeeklyPerformancePoster(report,trades=[]){
+function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   if(!report) return
   const stats=report.stats||{}
-  const highlights=pickWeeklyHighlightTrades(trades,5)
+  const presets={
+    square:{width:1080,height:1080,label:'instagram-square',highlights:3,summaryLines:7},
+    portrait:{width:1080,height:1350,label:'telegram-portrait',highlights:4,summaryLines:10},
+    status:{width:1080,height:1920,label:'whatsapp-status',highlights:5,summaryLines:14}
+  }
+  const preset=presets[format] || presets.portrait
+  const highlights=pickWeeklyHighlightTrades(trades,preset.highlights)
   const canvas=document.createElement('canvas')
-  canvas.width=1080
-  canvas.height=1350
+  canvas.width=preset.width
+  canvas.height=preset.height
   const ctx=canvas.getContext('2d')
-  const gradient=ctx.createLinearGradient(0,0,1080,1350)
+  const W=canvas.width, H=canvas.height
+  const margin=Math.round(W*0.065)
+  const contentWidth=W-(margin*2)
+  const gap=Math.round(W*0.018)
+  const cardW=Math.floor((contentWidth-gap)/2)
+  const cardH=format==='status'?130:118
+  const gradient=ctx.createLinearGradient(0,0,W,H)
   gradient.addColorStop(0,'#050816')
-  gradient.addColorStop(0.5,'#0b1223')
+  gradient.addColorStop(0.55,'#0b1223')
   gradient.addColorStop(1,'#04120b')
   ctx.fillStyle=gradient
-  ctx.fillRect(0,0,canvas.width,canvas.height)
+  ctx.fillRect(0,0,W,H)
   ctx.fillStyle='rgba(0,255,163,0.08)'
-  ctx.beginPath(); ctx.arc(940,180,160,0,Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(W-120,170,160,0,Math.PI*2); ctx.fill()
   ctx.fillStyle='rgba(255,215,0,0.06)'
-  ctx.beginPath(); ctx.arc(180,1160,140,0,Math.PI*2); ctx.fill()
+  ctx.beginPath(); ctx.arc(130,H-170,150,0,Math.PI*2); ctx.fill()
 
+  let y=86
   ctx.fillStyle='#00f59b'
   ctx.font='700 34px Arial'
-  ctx.fillText('1000PIPS',70,90)
+  ctx.fillText('1000PIPS',margin,y)
+  y+=38
   ctx.fillStyle='#ffffff'
-  ctx.font='700 62px Arial'
-  ctx.fillText('WEEKLY PERFORMANCE',70,165)
+  ctx.font=format==='square'?'700 56px Arial':'700 62px Arial'
+  ctx.fillText('WEEKLY PERFORMANCE',margin,y+36)
+  y+=72
   ctx.fillStyle='#aab3c5'
   ctx.font='28px Arial'
-  ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),70,210)
+  ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
+  y+=42
 
   const statItems=[
     ['Weekly Pips', String(stats.weeklyPips ?? 0)],
@@ -187,67 +203,72 @@ function downloadWeeklyPerformancePoster(report,trades=[]){
     ['Total Pips', String(stats.totalPips ?? 0)],
     ['Active Trades', String(stats.activeTrades ?? 0)]
   ]
-  let sx=70, sy=260, sw=285, sh=120, gap=20
   statItems.forEach((item,i)=>{
-    const x=sx + (i%2)*(sw+gap)
-    const y=sy + Math.floor(i/2)*(sh+gap)
+    const x=margin + (i%2)*(cardW+gap)
+    const cy=y + Math.floor(i/2)*(cardH+gap)
     ctx.fillStyle='rgba(255,255,255,0.06)'
-    drawCanvasRoundRect(ctx,x,y,sw,sh,24,true)
+    drawCanvasRoundRect(ctx,x,cy,cardW,cardH,22,true)
     ctx.fillStyle='#7efcc6'
     ctx.font='24px Arial'
-    ctx.fillText(item[0],x+24,y+38)
+    ctx.fillText(item[0],x+22,cy+36)
     ctx.fillStyle='#ffffff'
     ctx.font='700 42px Arial'
-    ctx.fillText(item[1],x+24,y+86)
+    ctx.fillText(item[1],x+22,cy+82)
   })
+  y += (cardH*3) + (gap*2) + 26
 
+  const updateBoxH = format==='status' ? 290 : format==='portrait' ? 240 : 210
   ctx.fillStyle='rgba(255,255,255,0.06)'
-  drawCanvasRoundRect(ctx,660,260,350,400,24,true)
+  drawCanvasRoundRect(ctx,margin,y,contentWidth,updateBoxH,24,true)
   ctx.fillStyle='#ffd54f'
   ctx.font='700 30px Arial'
-  ctx.fillText('Top Updates',690,308)
+  ctx.fillText('Top Trade Updates',margin+28,y+42)
   if(!highlights.length){
     ctx.fillStyle='#d8e0ef'
     ctx.font='26px Arial'
-    ctx.fillText('No closed trades yet.',690,360)
+    ctx.fillText('No closed trades yet.',margin+28,y+92)
   }else{
     highlights.forEach((t,idx)=>{
-      const y=360+(idx*58)
+      const lineY=y+88+(idx*42)
       const p=Number(t.resultPips||0)
       ctx.fillStyle='#ffffff'
-      ctx.font='700 25px Arial'
-      ctx.fillText(`${t.pair} ${t.direction}`,690,y)
+      ctx.font='700 24px Arial'
+      ctx.fillText(`${t.pair} ${t.direction}`,margin+28,lineY)
       ctx.fillStyle='#aab3c5'
       ctx.font='22px Arial'
-      ctx.fillText(signalStatusLabel(t.status,t.resultPips),690,y+26)
+      ctx.fillText(signalStatusLabel(t.status,t.resultPips),margin+340,lineY)
       ctx.fillStyle=p>0?'#00f59b':p<0?'#ff6a6a':'#ffd54f'
-      ctx.font='700 24px Arial'
-      ctx.fillText(`${p>0?'+':''}${p} pips`,910,y+12)
+      ctx.font='700 22px Arial'
+      ctx.textAlign='right'
+      ctx.fillText(`${p>0?'+':''}${p} pips`,W-margin-30,lineY)
+      ctx.textAlign='left'
     })
   }
+  y += updateBoxH + 22
 
+  const summaryBoxH = H - y - 110
   ctx.fillStyle='rgba(255,255,255,0.06)'
-  drawCanvasRoundRect(ctx,70,700,940,500,24,true)
+  drawCanvasRoundRect(ctx,margin,y,contentWidth,summaryBoxH,24,true)
   ctx.fillStyle='#7efcc6'
   ctx.font='700 30px Arial'
-  ctx.fillText('Weekly Summary',100,748)
+  ctx.fillText('Weekly Summary',margin+28,y+42)
   ctx.fillStyle='#dfe7f5'
   ctx.font='25px Arial'
-  wrapCanvasText(ctx, buildWeeklyReportText(report,trades), 100, 800, 880, 34, 10)
+  wrapCanvasText(ctx, buildWeeklyReportText(report,trades), margin+28, y+92, contentWidth-56, 34, preset.summaryLines)
 
   ctx.fillStyle='rgba(0,0,0,0.24)'
-  drawCanvasRoundRect(ctx,70,1220,940,72,18,true)
+  drawCanvasRoundRect(ctx,margin,H-84,contentWidth,56,18,true)
   ctx.fillStyle='#e9eef8'
-  ctx.font='24px Arial'
-  ctx.fillText('Instagram • Telegram • Members Report',100,1264)
+  ctx.font='22px Arial'
+  ctx.fillText('1000PIPS • Premium Weekly Performance',margin+22,H-48)
   ctx.textAlign='right'
   ctx.fillStyle='#8ea0bd'
-  ctx.fillText('Trade with proper risk management',980,1264)
+  ctx.fillText('Trade with proper risk management',W-margin-20,H-48)
   ctx.textAlign='left'
 
   const link=document.createElement('a')
   link.href=canvas.toDataURL('image/png')
-  link.download=`1000pips-weekly-performance-${new Date().toISOString().slice(0,10)}.png`
+  link.download=`1000pips-weekly-performance-${preset.label}-${new Date().toISOString().slice(0,10)}.png`
   link.click()
 }
 function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
@@ -283,7 +304,7 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
       <h4>Report Summary</h4>
       <pre>{buildWeeklyReportText(normalizedReport,trades)}</pre>
     </div>
-    {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades)}>Download Performance Image</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
+    {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'square')}>Download Instagram Square</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'portrait')}>Download Telegram Portrait</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'status')}>Download WhatsApp Status</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
   </div>
 }
 
