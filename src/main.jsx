@@ -31,6 +31,9 @@ function getPlanPrice(plan){
 }
 
 function formatDate(d){ return d?new Date(d).toLocaleDateString():'Lifetime' }
+function vipDaysNumber(days){ if(days==='Lifetime' || days===undefined || days===null || days==='') return null; const n=Number(days); return Number.isFinite(n)?n:null }
+function isExpiringSoon(days){ const n=vipDaysNumber(days); return n!==null && n>=0 && n<=3 }
+function isExpiringThisWeek(days){ const n=vipDaysNumber(days); return n!==null && n>=0 && n<=7 }
 function formatDateTime(d){ return d?new Date(d).toLocaleString():'Not available' }
 function signalStatusLabel(status, resultPips){
   const s=String(status||'active').toLowerCase()
