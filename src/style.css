@@ -1086,3 +1086,81 @@ footer h2{color:#00ff88}
   .quickTemplateHead small{text-align:left}
   .quickTemplateGrid{grid-template-columns:1fr}
 }
+
+/* VIP expiry warning upgrade */
+.warningBadge{
+  color:#ffd166;
+  font-weight:900;
+}
+.expiryWarningBox{
+  background:linear-gradient(135deg,rgba(255,209,102,.18),rgba(0,255,136,.08));
+  border:1px solid rgba(255,209,102,.45);
+  border-radius:24px;
+  padding:22px;
+  margin:20px 0;
+  box-shadow:0 18px 45px rgba(0,0,0,.28);
+}
+.expiryWarningBox h3{
+  color:#ffd166;
+  margin-bottom:8px;
+}
+.expiryWarningBox p{
+  color:#f4f4f4;
+  line-height:1.65;
+}
+.expiryWarningBox button{
+  margin-top:12px;
+  border:0;
+  border-radius:14px;
+  padding:12px 18px;
+  background:#00ff88;
+  color:#000;
+  font-weight:900;
+  cursor:pointer;
+}
+.expiryAdminBox{
+  border-color:rgba(255,209,102,.35)!important;
+}
+.expiryStatsRow{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:14px;
+  margin:16px 0;
+}
+.expiryStatsRow div{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:18px;
+  padding:16px;
+}
+.expiryStatsRow strong{
+  display:block;
+  color:#ffd166;
+  font-size:30px;
+}
+.expiryStatsRow span{
+  color:#cfcfcf;
+  font-size:13px;
+}
+.warnPill,.dangerPill{
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:900;
+  margin:6px 0 10px;
+}
+.warnPill{
+  background:rgba(255,209,102,.14);
+  border:1px solid rgba(255,209,102,.35);
+  color:#ffd166;
+}
+.dangerPill{
+  background:rgba(255,90,90,.14);
+  border:1px solid rgba(255,90,90,.38);
+  color:#ff7777;
+}
+.expiryRow{
+  border-top-color:rgba(255,209,102,.22)!important;
+}
