@@ -596,6 +596,7 @@ function Admin({user,setPage}){
   const [editingTrade,setEditingTrade]=useState(null)
   const [coupons,setCoupons]=useState([]),[couponForm,setCouponForm]=useState({code:'',discountType:'percentage',discountValue:'10',active:true,note:''})
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
+  const [memberSearch,setMemberSearch]=useState(''),[memberFilter,setMemberFilter]=useState('all')
 
   const tradeTemplates=[
     {label:'Gold BUY', pair:'XAUUSD', category:'Gold', direction:'BUY', notes:'Gold bullish setup. Enter only after confirmation. Manage risk properly.'},
@@ -627,6 +628,29 @@ ${t.notes}`,sendTelegram:true})
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
   const expiringMembers = users.filter(u=>u.vip && isExpiringThisWeek(u.daysRemaining)).sort((a,b)=>Number(a.daysRemaining||0)-Number(b.daysRemaining||0))
   const expiredMembers = users.filter(u=>u.status==='expired' || (!u.vip && Number(u.daysRemaining)===0))
+  const pendingMembers = users.filter(u=>String(u.status||'').toLowerCase().includes('pending'))
+  const activeVipMembers = users.filter(u=>u.vip)
+  const nonVipMembers = users.filter(u=>!u.vip && String(u.status||'').toLowerCase()!=='expired')
+  const memberSearchText = memberSearch.trim().toLowerCase()
+  const filteredUsers = users.filter(u=>{
+    const matchesSearch = !memberSearchText || [u.name,u.email,u.status,u.plan].some(v=>String(v||'').toLowerCase().includes(memberSearchText))
+    const status = String(u.status||'').toLowerCase()
+    const matchesFilter = memberFilter==='all' ||
+      (memberFilter==='vip' && u.vip) ||
+      (memberFilter==='pending' && status.includes('pending')) ||
+      (memberFilter==='expired' && (status==='expired' || (!u.vip && Number(u.daysRemaining)===0))) ||
+      (memberFilter==='notvip' && !u.vip && status!=='expired') ||
+      (memberFilter==='expiring' && u.vip && isExpiringThisWeek(u.daysRemaining))
+    return matchesSearch && matchesFilter
+  })
+  const memberFilterButtons=[
+    ['all','All Members',users.length],
+    ['vip','VIP Active',activeVipMembers.length],
+    ['pending','Pending',pendingMembers.length],
+    ['expiring','Expiring Soon',expiringMembers.length],
+    ['expired','Expired',expiredMembers.length],
+    ['notvip','Not VIP',nonVipMembers.length]
+  ]
   async function approve(id){ await api(`/api/admin/payments/${id}/approve`,{method:'PUT'}); await loadAdmin() }
   async function viewShot(id){ try{ const d=await api(`/api/admin/payments/${id}/screenshot`); setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`) }catch(e){ setMsg(e.message) } }
   async function createCoupon(e){ e.preventDefault(); try{ await api('/api/admin/coupons',{method:'POST',body:JSON.stringify(couponForm)}); setMsg('Coupon created successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
@@ -696,7 +720,7 @@ ${t.notes}`,sendTelegram:true})
         {adminReferrals.map(r=><div key={r._id} className="adminRow"><strong>{r.referredName || r.referredEmail}</strong><p>Referred by: {r.referrerEmail}</p><p>Status: {r.status} | Plan: {r.plan || 'Not selected yet'}</p><div className="rowBtns"><button onClick={()=>updateReferral(r._id,'pending')}>Pending</button><button onClick={()=>updateReferral(r._id,'approved')}>Approved</button><button onClick={()=>updateReferral(r._id,'paid')}>Paid</button></div></div>)}
       </div>
       <div className="adminBox"><h3>Payment Proofs</h3>{payments.length===0&&<p>No payment proofs found.</p>}{payments.map(p=><div className="adminRow" key={p._id}><strong>{p.userName}</strong><p>{p.plan}</p><p>{p.method} | {p.transactionId}</p><p>Status: {p.status}</p><div className="rowBtns"><button onClick={()=>viewShot(p._id)}>View Screenshot</button>{p.status!=='approved'&&<button onClick={()=>approve(p._id)}>Approve VIP</button>}</div></div>)}</div>
-      <div className="adminBox"><h3>Users & Expiry</h3><select value={renewPlan} onChange={e=>setRenewPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select>{users.map(u=><div className="adminRow" key={u.id}><strong>{u.name}</strong><p>{u.email}</p><p>VIP: {u.vip?'YES':'NO'} | Status: {u.status}</p><p>Expires: {formatDate(u.vipExpiryDate)}</p><p>Remaining: {u.daysRemaining==='Lifetime'?'Lifetime':`${u.daysRemaining||0} days`}</p>{u.vip&&isExpiringThisWeek(u.daysRemaining)&&<span className={isExpiringSoon(u.daysRemaining)?'dangerPill':'warnPill'}>{isExpiringSoon(u.daysRemaining)?'Renew urgently':'Expiring this week'}</span>}<div className="rowBtns"><button onClick={()=>renewVip(u.id)}>Renew VIP</button><button onClick={()=>removeVip(u.id)}>Remove VIP</button></div></div>)}</div>
+      <div className="adminBox full memberManagerBox"><h3>Member Search & Management</h3><p>Find members quickly by name, email, status or plan. Use filters to manage VIP, pending, expired and expiring members faster.</p><div className="memberManagerTools"><input placeholder="Search member by name, email, status or plan..." value={memberSearch} onChange={e=>setMemberSearch(e.target.value)}/><select value={renewPlan} onChange={e=>setRenewPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select></div><div className="memberFilterButtons">{memberFilterButtons.map(([key,label,count])=><button key={key} className={memberFilter===key?'active':''} onClick={()=>setMemberFilter(key)}>{label}<small>{count}</small></button>)}</div><div className="memberResultLine">Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length}</strong> members</div>{filteredUsers.length===0&&<p>No members found for this search/filter.</p>}{filteredUsers.map(u=>{ const statusText=String(u.status||'not_paid'); const expiring=u.vip&&isExpiringThisWeek(u.daysRemaining); return <div className="adminRow memberRow" key={u.id}><div className="memberRowHead"><div><strong>{u.name||'No name'}</strong><p>{u.email}</p></div><div className="memberBadges"><span className={u.vip?'memberBadge vip':'memberBadge normal'}>{u.vip?'VIP ACTIVE':'NOT VIP'}</span><span className={`memberBadge ${statusText.toLowerCase().replace(/[^a-z0-9]/g,'')}`}>{statusText}</span></div></div><p>Plan: {u.plan || 'No plan selected'}</p><p>Expires: {formatDate(u.vipExpiryDate)} | Remaining: {u.daysRemaining==='Lifetime'?'Lifetime':`${u.daysRemaining||0} days`}</p>{expiring&&<span className={isExpiringSoon(u.daysRemaining)?'dangerPill':'warnPill'}>{isExpiringSoon(u.daysRemaining)?'Renew urgently':'Expiring this week'}</span>}<div className="rowBtns"><button onClick={()=>renewVip(u.id)}>Renew / Extend VIP</button><button onClick={()=>removeVip(u.id)}>Remove VIP</button></div></div>})}</div>
       <div className="adminBox"><h3>Post Text Signal</h3><form onSubmit={postSignal} className="form compact"><input value={signal.title} onChange={e=>setSignal({...signal,title:e.target.value})}/><textarea rows="7" value={signal.message} onChange={e=>setSignal({...signal,message:e.target.value})}/><label className="check"><input type="checkbox" checked={signal.sendTelegram} onChange={e=>setSignal({...signal,sendTelegram:e.target.checked})}/> Send to Telegram</label><button>Post Signal</button></form></div>
       <div className="adminBox"><h3>Add Trade Signal</h3>
         <div className="quickTemplateBox">
