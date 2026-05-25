@@ -1309,5 +1309,16 @@ footer h2{color:#00ff88}
 .weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
 .weeklyAutoNotice strong{color:#7efcc6}
 
-.testimonialSubmitBox{background:linear-gradient(135deg,rgba(0,245,155,.09),rgba(255,255,255,.04));border:1px solid rgba(0,245,155,.18);border-radius:22px;padding:22px;margin:22px 0;box-shadow:0 18px 45px rgba(0,0,0,.22)}
-.testimonialSubmitBox h3{margin:0 0 8px;color:#fff}.testimonialSubmitBox p{color:#b8c2d3}.testimonialAdminBox .adminRow{border-left:3px solid #00d084}.testimonialCard strong{display:block;margin-top:12px;color:#fff}.stars{color:#ffd54f;font-size:20px;letter-spacing:2px;margin-bottom:10px}
+
+.conversionFlowSection{background:linear-gradient(135deg,rgba(0,245,155,.06),rgba(255,255,255,.02));border:1px solid rgba(0,245,155,.14);border-radius:28px;margin-top:34px}
+.conversionSteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:26px}
+.conversionSteps>div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:22px}
+.conversionSteps span{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#00d084;color:#04120b;font-weight:900;margin-bottom:14px}
+.conversionSteps h3{margin:0 0 10px;color:#fff}.conversionSteps p{color:#b9c4d8;line-height:1.6;margin:0}
+.conversionActionBox{display:flex;justify-content:space-between;align-items:center;gap:20px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:22px;margin-top:22px}
+.conversionActionBox h3{margin:0 0 8px;color:#fff}.conversionActionBox p{margin:0;color:#b9c4d8}.conversionActionBox button{white-space:nowrap}
+.trustConversionSection{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:center}
+.trustConversionSection p{color:#b9c4d8;line-height:1.7}.trustConversionGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.trustConversionGrid>div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:18px}
+.trustConversionGrid strong{display:block;color:#00f59b;margin-bottom:8px}.trustConversionGrid span{color:#dfe7f5;font-size:14px;line-height:1.5}
+@media(max-width:760px){.conversionActionBox{flex-direction:column;align-items:flex-start}.conversionActionBox button{width:100%}.trustConversionSection{grid-template-columns:1fr}.trustConversionGrid{grid-template-columns:1fr}}

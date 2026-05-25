@@ -440,66 +440,6 @@ function App(){
   </div>
 }
 
-
-function ApprovedTestimonials(){
-  const [items,setItems]=useState([])
-  const [msg,setMsg]=useState('')
-  useEffect(()=>{ load() },[])
-  async function load(){ try{ setItems(await api('/api/testimonials/public')) }catch(e){ setMsg(e.message) } }
-  const fallback=[
-    {rating:5,message:'The best thing is the clear structure: signals, chart analysis, pips tracking and Telegram updates.',userName:'VIP Member'},
-    {rating:5,message:'I like that every trade can be tracked with exact pips and the weekly report is easy to understand.',userName:'Gold Trader'},
-    {rating:5,message:'The analysis with chart images helps me understand the market better before taking a trade.',userName:'Forex Member'}
-  ]
-  const shown=items.length?items:fallback
-  return <section className="section testimonialSection">
-    <p className="green">SOCIAL PROOF</p>
-    <h2>What Members Say About 1000PIPS</h2>
-    {msg&&<p className="error">{msg}</p>}
-    <div className="testimonialGrid">
-      {shown.map((t,i)=><div className="testimonialCard" key={t._id||i}>
-        <div className="stars">{'★'.repeat(Number(t.rating||5))}</div>
-        <p>“{t.message}”</p>
-        <strong>{t.userName || 'VIP Member'}</strong>
-      </div>)}
-    </div>
-    <p className="smallNote">Note: Trading involves risk. Results depend on market conditions, discipline and risk management.</p>
-  </section>
-}
-
-function TestimonialSubmitBox({user}){
-  const [rating,setRating]=useState(5)
-  const [message,setMessage]=useState('')
-  const [msg,setMsg]=useState('')
-  const [loading,setLoading]=useState(false)
-  async function submit(e){
-    e.preventDefault(); setMsg(''); setLoading(true)
-    try{
-      await api('/api/testimonials',{method:'POST',body:JSON.stringify({rating,message})})
-      setMessage('')
-      setRating(5)
-      setMsg('Thank you bro. Your testimonial was submitted and is waiting for admin approval.')
-    }catch(err){ setMsg(err.message) } finally{ setLoading(false) }
-  }
-  if(!user) return null
-  return <div className="testimonialSubmitBox">
-    <h3>Share Your 1000PIPS Feedback</h3>
-    <p>Your feedback helps new members trust the process. Admin will approve before it appears on homepage.</p>
-    <form onSubmit={submit} className="form compact">
-      <select value={rating} onChange={e=>setRating(Number(e.target.value))}>
-        <option value="5">★★★★★ 5 Stars</option>
-        <option value="4">★★★★ 4 Stars</option>
-        <option value="3">★★★ 3 Stars</option>
-        <option value="2">★★ 2 Stars</option>
-        <option value="1">★ 1 Star</option>
-      </select>
-      <textarea required rows="4" placeholder="Write your feedback about 1000PIPS signals, analysis, dashboard or Telegram updates..." value={message} onChange={e=>setMessage(e.target.value)}/>
-      <button disabled={loading}>{loading?'Submitting...':'Submit Testimonial'}</button>
-    </form>
-    {msg&&<p className={msg.includes('Thank')?'success':'error'}>{msg}</p>}
-  </div>
-}
-
 function Home({setPage}){ 
   const [showCouponPopup,setShowCouponPopup]=useState(true)
   return <>
@@ -555,6 +495,39 @@ function Home({setPage}){
     </div>}
 
     <AnnouncementsPanel mode="public"/>
+
+
+
+    <section className="section conversionFlowSection">
+      <p className="green">START IN 3 SIMPLE STEPS</p>
+      <h2>How To Join 1000PIPS VIP</h2>
+      <div className="conversionSteps">
+        <div><span>1</span><h3>Create Account</h3><p>Register your member account and choose the VIP plan that fits your trading journey.</p></div>
+        <div><span>2</span><h3>Submit Payment Proof</h3><p>Pay with PayPal, Skrill or Binance Pay and upload your payment screenshot for approval.</p></div>
+        <div><span>3</span><h3>Access VIP Signals</h3><p>After approval, you receive VIP Telegram instructions and can access dashboard signals, analysis and reports.</p></div>
+      </div>
+      <div className="conversionActionBox">
+        <div>
+          <h3>Ready to trade with more structure?</h3>
+          <p>Get premium signals, clear updates, weekly reports, archive transparency and Telegram alerts in one place.</p>
+        </div>
+        <button onClick={()=>setPage('plans')}>Choose VIP Plan</button>
+      </div>
+    </section>
+
+    <section className="section trustConversionSection">
+      <div>
+        <p className="green">WHY MEMBERS TRUST IT</p>
+        <h2>Not Just Signals — A Full Tracking System</h2>
+        <p>1000PIPS is designed to show the full trading process: signal given, status updates, TP/SL/BE results, weekly report archive, daily analysis follow-ups and member announcements.</p>
+      </div>
+      <div className="trustConversionGrid">
+        <div><strong>Live Status</strong><span>Running / TP Hit / SL / BE / Closed</span></div>
+        <div><strong>Weekly Proof</strong><span>Reports saved for transparency</span></div>
+        <div><strong>Analysis Updates</strong><span>Follow-up comments after market movement</span></div>
+        <div><strong>VIP Email</strong><span>Telegram access and reports by email</span></div>
+      </div>
+    </section>
 
     <section className="section">
       <p className="green">WHY 1000PIPS</p>
@@ -659,8 +632,32 @@ function Home({setPage}){
       </div>
     </section>
 
-    <ApprovedTestimonials/>
+    <section className="section testimonialSection">
+      <p className="green">SOCIAL PROOF</p>
+      <h2>What Members Can Expect</h2>
+      <div className="testimonialGrid">
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“The best thing is the clear structure: signals, chart analysis, pips tracking and Telegram updates.”</p>
+          <strong>VIP Member</strong>
+        </div>
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“I like that every trade can be tracked with exact pips and the weekly report is easy to understand.”</p>
+          <strong>Gold Trader</strong>
+        </div>
+        <div className="testimonialCard">
+          <div className="stars">★★★★★</div>
+          <p>“The analysis with chart images helps me understand the market better before taking a trade.”</p>
+          <strong>Forex Member</strong>
+        </div>
+      </div>
+      <p className="smallNote">
+        Note: Trading involves risk. Results depend on market conditions, discipline and risk management.
+      </p>
+    </section>
 
+    
     <section className="section contactSalesSection">
       <div className="contactSalesInner">
         <div>
@@ -895,7 +892,7 @@ function SignalDashboard({user,setPage}){
     <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&weeklyTrades.length===0&&<p>No current or last week trades yet.</p>}{weeklyTrades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
   </section>
 }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div><TestimonialSubmitBox user={user}/>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
@@ -992,7 +989,6 @@ function Admin({user,setPage}){
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
   const [memberSearch,setMemberSearch]=useState(''),[memberFilter,setMemberFilter]=useState('all')
   const [announcements,setAnnouncements]=useState([]),[announcementForm,setAnnouncementForm]=useState({title:'Important Market Update',message:'High impact news today. Trade carefully and follow risk management.',visibility:'vip',sendTelegram:false})
-  const [testimonials,setTestimonials]=useState([])
   const [adminView,setAdminView]=useState('overview'),[showAllAdmin,setShowAllAdmin]=useState({})
   const [adminTradeSearch,setAdminTradeSearch]=useState(''),[adminTradeFilter,setAdminTradeFilter]=useState('all')
   const [adminAnalysisSearch,setAdminAnalysisSearch]=useState(''),[adminAnalysisFilter,setAdminAnalysisFilter]=useState('all')
@@ -1023,7 +1019,7 @@ TP2:
 ${t.notes}`,sendTelegram:true})
     setMsg(`${t.label} template loaded. Add Entry, SL and TP levels before posting.`)
   }
-  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,sig,pr,cp,refs,anns,tes]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/signals'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals'),api('/api/admin/announcements'),api('/api/admin/testimonials')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setTextSignals(sig); setProofs(pr); setCoupons(cp); setAdminReferrals(refs); setAnnouncements(anns); setTestimonials(tes); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
+  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,sig,pr,cp,refs,anns]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/signals'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals'),api('/api/admin/announcements')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setTextSignals(sig); setProofs(pr); setCoupons(cp); setAdminReferrals(refs); setAnnouncements(anns); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
   useEffect(()=>{ if(user?.role==='admin') loadAdmin() },[user])
   if(!user) return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
@@ -1078,8 +1074,6 @@ ${t.notes}`,sendTelegram:true})
     if(!window.confirm('Delete this announcement?')) return
     try{ await api(`/api/admin/announcements/${id}`,{method:'DELETE'}); setMsg('Announcement deleted.'); await loadAdmin() }catch(err){ setMsg(err.message) }
   }
-  async function approveTestimonial(id){ try{ await api(`/api/admin/testimonials/${id}/approve`,{method:'PUT'}); setMsg('Testimonial approved.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
-  async function deleteTestimonial(id){ if(!window.confirm('Delete this testimonial?')) return; try{ await api(`/api/admin/testimonials/${id}`,{method:'DELETE'}); setMsg('Testimonial deleted.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function approve(id){ await api(`/api/admin/payments/${id}/approve`,{method:'PUT'}); await loadAdmin() }
   async function viewShot(id){ try{ const d=await api(`/api/admin/payments/${id}/screenshot`); setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`) }catch(e){ setMsg(e.message) } }
   async function createCoupon(e){ e.preventDefault(); try{ await api('/api/admin/coupons',{method:'POST',body:JSON.stringify(couponForm)}); setMsg('Coupon created successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
@@ -1168,22 +1162,6 @@ ${t.notes}`,sendTelegram:true})
             <div className="rowBtns"><button onClick={()=>deleteAnnouncement(a._id)}>Delete</button></div>
           </div>)}
         </div>
-      </div>
-
-
-      <div className="adminBox full testimonialAdminBox">
-        <h3>Member Testimonials / Reviews</h3>
-        {testimonials.length===0&&<p>No testimonials submitted yet.</p>}
-        {adminItems(testimonials,'testimonials').map(t=><div className="adminRow" key={t._id}>
-          <strong>{t.userName || 'VIP Member'} · {'★'.repeat(Number(t.rating||5))}</strong>
-          <p>{t.message}</p>
-          <p>Status: {t.status} | Email: {t.userEmail}</p>
-          <div className="rowBtns">
-            {t.status!=='approved'&&<button onClick={()=>approveTestimonial(t._id)}>Approve</button>}
-            <button onClick={()=>deleteTestimonial(t._id)}>Delete</button>
-          </div>
-        </div>)}
-        <AdminShowToggle itemsKey="testimonials" total={testimonials.length}/>
       </div>
 
       <div className="adminBox full"><h3>Coupon / Discount Codes</h3>
