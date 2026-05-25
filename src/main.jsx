@@ -118,7 +118,7 @@ function tradeFilterMatch(trade, filter){
   return true
 }
 function filterCount(trades, key){ return trades.filter(t=>tradeFilterMatch(t,key)).length }
-function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp2'; if(n<0) return 'sl'; return 'breakeven' }
+function tradeStatusFromPips(pips){ const n=Number(pips); if(n===0) return 'breakeven'; return 'closed' }
 function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(user.daysRemaining)) return <div className="warningBadge">VIP expires in {user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'} · Renew soon</div>; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
@@ -421,7 +421,6 @@ function App(){
         <button onClick={()=>setPage('archive')}>Archive</button>
         <button onClick={()=>setPage('dashboard')}>Dashboard</button>
         <button onClick={()=>setPage('vip')}>VIP Area</button>
-        <button onClick={()=>setPage('rules')}>Signal Rules</button>
         <button onClick={()=>setPage('referrals')}>Referrals</button><button onClick={()=>setPage('admin')}>Admin</button>
         {user ? <button onClick={logout}>Logout</button> : <button onClick={()=>setPage('login')}>Login</button>}
       </div>
@@ -433,7 +432,6 @@ function App(){
     {page==='payment' && <Payment user={user} setUser={setUser} setPage={setPage}/>} 
     {page==='dashboard' && <SignalDashboard user={user} setPage={setPage}/>} 
     {page==='vip' && <Vip user={user} setPage={setPage}/>} 
-    {page==='rules' && <SignalRules user={user} setPage={setPage}/>} 
     {page==='archive' && <Archive user={user} setPage={setPage}/>} 
     {page==='referrals' && <ReferralCenter user={user} setPage={setPage}/>} 
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
@@ -483,15 +481,6 @@ function Home({setPage}){
 
 
     <AnnouncementsPanel mode="public"/>
-
-    <section className="section rulesPromoSection">
-      <div>
-        <p className="green">TRADE WITH DISCIPLINE</p>
-        <h2>Learn How To Follow 1000PIPS Signals Correctly</h2>
-        <p>Before entering any VIP trade, understand Entry, SL, TP1, TP2, BE, invalidation and risk management rules.</p>
-      </div>
-      <button onClick={()=>setPage('rules')}>Read Signal Rules</button>
-    </section>
 
     <section className="section">
       <p className="green">WHY 1000PIPS</p>
@@ -715,61 +704,6 @@ function Home({setPage}){
 
   </> 
 }
-
-function SignalRules({user,setPage}){
-  const isVip=user?.vip || user?.role==='admin'
-  return <section className="section signalRulesPage">
-    <div className="rulesHero">
-      <p className="green">1000PIPS MEMBER GUIDE</p>
-      <h2>VIP Signal Rules & Risk Management</h2>
-      <p>Use this page before following any signal. The goal is not only to catch pips, but to trade with discipline, protect capital, and avoid emotional mistakes.</p>
-      <div className="rulesHeroActions">
-        <button onClick={()=>setPage(isVip?'dashboard':'plans')}>{isVip?'Open VIP Dashboard':'Join VIP'}</button>
-        <button className="outlineBtn" onClick={()=>setPage('analysis')}>View Daily Analysis</button>
-      </div>
-    </div>
-
-    <div className="rulesGrid">
-      <div className="ruleCard importantRule"><span>01</span><h3>Risk Per Trade</h3><p>Risk only a small amount per signal. Suggested risk is 0.5% to 2% maximum per trade depending on your account size and experience.</p></div>
-      <div className="ruleCard"><span>02</span><h3>Entry Rule</h3><p>Do not enter blindly if price is far away from the entry zone. Wait for price to come near the given entry or wait for admin update.</p></div>
-      <div className="ruleCard"><span>03</span><h3>Stop Loss Is Mandatory</h3><p>Always place the given SL. Never remove SL hoping the market will come back. One protected loss is better than one account-damaging trade.</p></div>
-      <div className="ruleCard"><span>04</span><h3>TP1 Management</h3><p>When TP1 hits, secure partial profit if your trading plan allows. Conservative members can close part of the trade and move SL to safer level.</p></div>
-      <div className="ruleCard"><span>05</span><h3>Break Even Meaning</h3><p>BE means break even. If admin updates BE 0, the trade should be protected around entry so the trade does not become a loss.</p></div>
-      <div className="ruleCard"><span>06</span><h3>Invalidated Setup</h3><p>If an analysis or setup is invalidated due to news, key level break, or market structure change, avoid new entries and follow admin updates.</p></div>
-      <div className="ruleCard"><span>07</span><h3>No Revenge Trading</h3><p>After SL or missed entry, do not jump into random trades. Wait for the next official setup. Overtrading destroys discipline.</p></div>
-      <div className="ruleCard"><span>08</span><h3>News Protection</h3><p>During high-impact news, spreads and volatility can increase. Reduce risk, avoid late entries, and follow the latest analysis update.</p></div>
-    </div>
-
-    <div className="rulesTimeline">
-      <h3>How To Follow A Signal</h3>
-      <div className="timelineSteps">
-        <div><b>1</b><span>Read pair, direction, entry, SL, TP1, TP2.</span></div>
-        <div><b>2</b><span>Check the chart and current price before entry.</span></div>
-        <div><b>3</b><span>Use correct lot size based on your risk.</span></div>
-        <div><b>4</b><span>Set SL immediately. Do not trade without protection.</span></div>
-        <div><b>5</b><span>Follow TP1 / TP2 / BE / Closed updates.</span></div>
-      </div>
-    </div>
-
-    <div className="rulesStatusGuide">
-      <h3>Signal Status Meaning</h3>
-      <div className="statusGuideGrid">
-        <div><strong>RUNNING</strong><p>Trade is active or waiting around the setup area.</p></div>
-        <div><strong>TP1 HIT</strong><p>First target reached. Consider securing partial profit.</p></div>
-        <div><strong>TP2 HIT</strong><p>Main target reached. Trade result is strongly positive.</p></div>
-        <div><strong>SL HIT</strong><p>Stop loss reached. Accept and wait for next setup.</p></div>
-        <div><strong>BREAK EVEN</strong><p>Trade protected near entry. No major profit/loss expected.</p></div>
-        <div><strong>CLOSED</strong><p>Admin has closed the trade or analysis idea.</p></div>
-      </div>
-    </div>
-
-    <div className="rulesDisclaimer">
-      <h3>Important Risk Disclaimer</h3>
-      <p>Forex, Gold, Crypto, Oil and Indices trading involve risk. 1000PIPS provides analysis and trade ideas, but every member is responsible for their own account, lot size, risk and execution. Never risk money you cannot afford to lose.</p>
-    </div>
-  </section>
-}
-
 function Plans({setPage}){ 
   const plans=[
     ['1 Month VIP','$45','30 days VIP access. Good for testing signals, analysis and dashboard features.'],
@@ -911,7 +845,7 @@ function SignalDashboard({user,setPage}){
     <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&weeklyTrades.length===0&&<p>No current or last week trades yet.</p>}{weeklyTrades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
   </section>
 }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}<br/><button className="miniRulesBtn" onClick={()=>setPage('rules')}>Read VIP Signal Rules</button></div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
@@ -1105,7 +1039,7 @@ ${t.notes}`,sendTelegram:true})
   async function deleteTextSignal(id){ if(!window.confirm('Delete this text signal permanently? This is best for demo/test signals only.')) return; try{ await api(`/api/admin/signals/${id}`,{method:'DELETE'}); setMsg('Text signal deleted successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function deleteArchiveReport(id){ if(!window.confirm('Delete this archived report permanently?')) return; try{ await api(`/api/admin/reports/${id}`,{method:'DELETE'}); setMsg('Archived report deleted successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function addTrade(e){ e.preventDefault(); try{ await api('/api/admin/trades',{method:'POST',body:JSON.stringify(trade)}); setMsg('Trade signal added successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
-  async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips)})}); setMsg('Trade result updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips), manualClose:true})}); setMsg('Trade manually closed with exact pips.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function setTradeStatus(id, status, resultPips=null){ try{ const payload={status}; if(resultPips!==null) payload.resultPips=Number(resultPips); await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify(payload)}); setMsg(`Signal status updated: ${signalStatusLabel(status, resultPips??0)}`); await loadAdmin() }catch(err){ setMsg(err.message) } }
   function startEditTrade(t){ setEditingTrade({ _id:t._id, pair:t.pair||'', category:t.category||'Forex', direction:t.direction||'BUY', entry:t.entry||'', stopLoss:t.stopLoss||'', takeProfit1:t.takeProfit1||'', takeProfit2:t.takeProfit2||'', riskReward:t.riskReward||'', notes:t.notes||'', status:t.status||'active', resultPips:t.resultPips||0 }) }
   async function saveTradeEdit(e){ e.preventDefault(); if(!editingTrade?._id) return; try{ const {_id,...payload}=editingTrade; payload.resultPips=Number(payload.resultPips||0); await api(`/api/admin/trades/${_id}`,{method:'PUT',body:JSON.stringify(payload)}); setEditingTrade(null); setMsg('Trade signal edited successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
@@ -1134,7 +1068,7 @@ ${t.notes}`,sendTelegram:true})
   async function postAnalysisUpdate(e,id){
     e.preventDefault()
     try{
-      await api(`/api/admin/analysis/${id}/update`,{method:'POST',body:JSON.stringify({...analysisUpdateForm, sendTelegram:!!analysisUpdateForm.sendTelegram})})
+      await api(`/api/admin/analysis/${id}/update`,{method:'POST',body:JSON.stringify(analysisUpdateForm)})
       setMsg('Analysis update added successfully.')
       setActiveAnalysisUpdate(null)
       setAnalysisUpdateForm({status:'running',comment:'Running according to our analysis. Waiting for next confirmation.',visibility:'public',sendTelegram:true})
