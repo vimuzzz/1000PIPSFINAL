@@ -190,6 +190,7 @@ function buildWeeklyReportText(report,trades=[]){
   const highlights=pickWeeklyHighlightTrades(trades,5)
   const lines=[
     '1000PIPS PERFORMANCE REPORT',
+    stats.weekLabel ? `Week: ${stats.weekLabel}` : '',
     `Weekly Pips: ${stats.weeklyPips ?? 0}`,
     `Win Rate: ${stats.winRate ?? 0}%`,
     `Wins: ${stats.wins ?? 0}`,
@@ -258,7 +259,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   y+=72
   ctx.fillStyle='#aab3c5'
   ctx.font='28px Arial'
-  ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
+  ctx.fillText(stats.weekLabel ? `Week: ${stats.weekLabel}` : new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
   y+=42
 
   const statItems=[
@@ -348,7 +349,7 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
       <div>
         <span className="weeklyPosterKicker">1000PIPS PERFORMANCE</span>
         <h3>{title}</h3>
-        <p>{report?.period || 'Weekly'} · {subDate}</p>
+        <p>{stats.weekLabel ? `Week: ${stats.weekLabel}` : `${report?.period || 'Weekly'} · ${subDate}`}</p>
       </div>
       <div className="weeklyPosterBrand">1000PIPS</div>
     </div>
@@ -772,7 +773,7 @@ function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months
         {couponResult&&<div className="couponResultBox">
           <strong>{couponResult.code}</strong> applied — Original: ${couponResult.originalPrice} | Discount: ${couponResult.discount} | Final: ${couponResult.finalPrice}
         </div>}<label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
-function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div> }
+function StatsCards({stats}){ return <><div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div>{stats.weekLabel&&<div className="weeklyCycleNotice"><strong>Weekly Cycle:</strong> Monday - Sunday · Current report week: {stats.weekLabel}. New weekly report starts fresh every Monday.</div>}</> }
 function TradeCard({trade}){
   const statusLabel=signalStatusLabel(trade.status, trade.resultPips)
   const statusClass=signalStatusClass(trade.status, trade.resultPips)

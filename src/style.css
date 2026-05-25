@@ -1308,3 +1308,6 @@ footer h2{color:#00ff88}
 
 .weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
 .weeklyAutoNotice strong{color:#7efcc6}
+
+.weeklyCycleNotice{margin:16px 0 22px;padding:14px 18px;border-radius:16px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.22);color:#dfffea;font-size:14px;line-height:1.5}
+.weeklyCycleNotice strong{color:#00ff88}
