@@ -1068,7 +1068,7 @@ ${t.notes}`,sendTelegram:true})
   async function postAnalysisUpdate(e,id){
     e.preventDefault()
     try{
-      await api(`/api/admin/analysis/${id}/update`,{method:'POST',body:JSON.stringify(analysisUpdateForm)})
+      await api(`/api/admin/analysis/${id}/update`,{method:'POST',body:JSON.stringify({...analysisUpdateForm, sendTelegram:!!analysisUpdateForm.sendTelegram})})
       setMsg('Analysis update added successfully.')
       setActiveAnalysisUpdate(null)
       setAnalysisUpdateForm({status:'running',comment:'Running according to our analysis. Waiting for next confirmation.',visibility:'public',sendTelegram:true})

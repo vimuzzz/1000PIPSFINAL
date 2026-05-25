@@ -1296,3 +1296,28 @@ footer h2{color:#00ff88}
 
 .weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
 .weeklyAutoNotice strong{color:#7efcc6}
+
+
+/* Analysis update form hotfix */
+.analysisUpdateForm .check,
+.check{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  width:auto!important;
+  color:#fff!important;
+  margin:10px 0!important;
+}
+.analysisUpdateForm .check input[type="checkbox"],
+.check input[type="checkbox"]{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  accent-color:#00ff88!important;
+  cursor:pointer!important;
+}
+.analysisUpdateForm .rowBtns button[type="submit"],
+.analysisUpdateForm .rowBtns button:first-child{
+  min-width:190px!important;
+}
