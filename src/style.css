@@ -1305,3 +1305,6 @@ footer h2{color:#00ff88}
 .adminFilterBar input,.adminFilterBar select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b1220;color:#fff;outline:none}
 .adminFilterBar span{color:#9fb0c8;font-size:13px;white-space:nowrap}
 @media(max-width:760px){.adminFilterBar{grid-template-columns:1fr}.adminFilterBar span{white-space:normal}}
+
+.weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
+.weeklyAutoNotice strong{color:#7efcc6}

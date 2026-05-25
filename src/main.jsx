@@ -35,6 +35,49 @@ function vipDaysNumber(days){ if(days==='Lifetime' || days===undefined || days==
 function isExpiringSoon(days){ const n=vipDaysNumber(days); return n!==null && n>=0 && n<=3 }
 function isExpiringThisWeek(days){ const n=vipDaysNumber(days); return n!==null && n>=0 && n<=7 }
 function formatDateTime(d){ return d?new Date(d).toLocaleString():'Not available' }
+function startOfWeek(d=new Date()){
+  const date=new Date(d)
+  const day=date.getDay()
+  const diff=(day===0?-6:1-day)
+  date.setHours(0,0,0,0)
+  date.setDate(date.getDate()+diff)
+  return date
+}
+function getWeeklyWindow(){
+  const currentStart=startOfWeek(new Date())
+  const lastStart=new Date(currentStart)
+  lastStart.setDate(currentStart.getDate()-7)
+  const nextStart=new Date(currentStart)
+  nextStart.setDate(currentStart.getDate()+7)
+  return {currentStart,lastStart,nextStart}
+}
+function isDateThisOrLastWeek(dateValue){
+  if(!dateValue) return false
+  const d=new Date(dateValue)
+  if(Number.isNaN(d.getTime())) return false
+  const {lastStart,nextStart}=getWeeklyWindow()
+  return d>=lastStart && d<nextStart
+}
+function isRunningTrade(trade){
+  const label=signalStatusLabel(trade.status, trade.resultPips).toLowerCase()
+  return label==='running' || ['active','running','open'].includes(String(trade.status||'').toLowerCase())
+}
+function isTradeVisibleThisOrLastWeek(trade){
+  if(isRunningTrade(trade)) return true
+  return isDateThisOrLastWeek(trade.updatedAt || trade.closedAt || trade.createdAt)
+}
+function weekGroupLabel(dateValue){
+  if(!dateValue) return 'Older'
+  const d=new Date(dateValue)
+  const {currentStart,lastStart,nextStart}=getWeeklyWindow()
+  if(d>=currentStart && d<nextStart) return 'This Week'
+  if(d>=lastStart && d<currentStart) return 'Last Week'
+  return 'Older'
+}
+function visibleWeeklyAnalysis(posts=[]){
+  return (Array.isArray(posts)?posts:[]).filter(p=>isDateThisOrLastWeek(p.createdAt || p.updatedAt))
+}
+
 function signalStatusLabel(status, resultPips){
   const s=String(status||'active').toLowerCase()
   if(['active','running','open'].includes(s)) return 'RUNNING'
@@ -745,7 +788,7 @@ function TradeCard({trade}){
           <h3>{trade.pair}</h3>
           <span className={`directionBadge ${isBuy?'buy':'sell'}`}>{direction||'SIGNAL'}</span>
         </div>
-        <p className="premiumMeta">{trade.category} · Signal Given: {formatDateTime(trade.createdAt)}</p>
+        <p className="premiumMeta">{trade.category} · {weekGroupLabel(trade.updatedAt || trade.closedAt || trade.createdAt)} · Signal Given: {formatDateTime(trade.createdAt)}</p>
       </div>
       <span className={`premiumStatusBadge ${statusClass}`}>{statusLabel}</span>
     </div>
@@ -798,24 +841,25 @@ function SignalDashboard({user,setPage}){
   }
   if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Dashboard is only for approved VIP members</h2></section>
-  const filteredTrades=trades.filter(t=>tradeFilterMatch(t,filter))
+  const weeklyTrades=trades.filter(isTradeVisibleThisOrLastWeek)
+  const filteredTrades=weeklyTrades.filter(t=>tradeFilterMatch(t,filter))
   return <section className="section">
     <p className="green">SIGNAL DASHBOARD</p>
     <h2>Trading Performance</h2>
-    <div className="dashboardTopActions"><button className="refresh" onClick={load}>Refresh Dashboard</button><span>{filteredTrades.length} of {trades.length} signals showing</span></div>
+    <div className="dashboardTopActions"><button className="refresh" onClick={load}>Refresh Dashboard</button><span>{filteredTrades.length} of {weeklyTrades.length} current/last week signals showing</span></div><div className="weeklyAutoNotice"><strong>Weekly Auto Display:</strong> Running trades, this week trades and last week trades only. Older history stays in reports/archive.</div>
     <AnnouncementsPanel mode="vip" user={user}/>
     {msg&&<p className="error">{msg}</p>}
     {stats&&<StatsCards stats={stats}/>}
     <div className="signalFilterPanel">
       <div><h3>Filter Signals</h3><p>Quickly view running trades, closed results, or specific markets.</p></div>
       <div className="signalFilterButtons">
-        {filters.map(([key,label])=><button key={key} className={filter===key?'active':''} onClick={()=>setFilter(key)}>{label} <small>{filterCount(trades,key)}</small></button>)}
+        {filters.map(([key,label])=><button key={key} className={filter===key?'active':''} onClick={()=>setFilter(key)}>{label} <small>{filterCount(weeklyTrades,key)}</small></button>)}
       </div>
     </div>
-    <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
+    <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&weeklyTrades.length===0&&<p>No current or last week trades yet.</p>}{weeklyTrades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
   </section>
 }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="analysisGrid">{analysis.map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
@@ -893,13 +937,13 @@ function AnalysisCard({post}){
   const visibleUpdates = updates.filter(u=>post.visibility==='public' ? u.visibility==='public' : true)
   const latest = visibleUpdates[0]
   return <div className="analysisCard">
-    <div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>
+    <div className="analysisHeader"><div><h3>{post.title}</h3><p>{post.market} · {post.bias} · {weekGroupLabel(post.createdAt)} · {new Date(post.createdAt).toLocaleDateString()}</p></div><span className="chip">{post.visibility}</span></div>
     {latest&&<div className={`analysisLatestUpdate ${latest.status}`}><strong>{analysisUpdateStatusIcon(latest.status)} Latest Update: {analysisUpdateStatusLabel(latest.status)}</strong><p>{latest.comment}</p><small>{formatDateTime(latest.createdAt)}</small></div>}
     {post.chartImageData && <img className="analysisChart" src={imgSrcFromPost(post)} alt={post.chartImageName||post.title}/>} {post.summary&&<p className="analysisSummary">{post.summary}</p>} {post.keyLevels&&<p><strong>Key Levels:</strong> {post.keyLevels}</p>} {post.tradePlan&&<p><strong>Trade Plan:</strong> {post.tradePlan}</p>} {post.content&&<pre>{post.content}</pre>}
     {visibleUpdates.length>0&&<div className="analysisUpdateTimeline"><h4>Update History</h4>{visibleUpdates.map((u,i)=><div className={`analysisUpdateItem ${u.status}`} key={u._id||i}><span>{analysisUpdateStatusIcon(u.status)}</span><div><strong>{analysisUpdateStatusLabel(u.status)}</strong><p>{u.comment}</p><small>{formatDateTime(u.createdAt)} · {u.visibility}</small></div></div>)}</div>}
   </div>
 }
-function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
+function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="weeklyAutoNotice"><strong>Daily Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.length>0&&visibleWeeklyAnalysis(posts).length===0&&<p>No public analysis from this week or last week.</p>}{visibleWeeklyAnalysis(posts).map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
 function Admin({user,setPage}){
   const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[textSignals,setTextSignals]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
   const [signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\nEntry: 3350\nSL: 3340\nTP1: 3370\nTP2: 3385',sendTelegram:true})
