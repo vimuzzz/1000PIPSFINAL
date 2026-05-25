@@ -895,7 +895,7 @@ function Archive({user,setPage}){
     {msg&&<p className="error">{msg}</p>}
     <div className="archivePosterGrid">
       {reports.length===0&&<p>No archived reports yet.</p>}
-      {adminItems(reports,'reports').map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>)}
+      {reports.map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>)}
     </div>
   </section>
 }
