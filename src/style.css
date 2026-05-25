@@ -1299,3 +1299,9 @@ footer h2{color:#00ff88}
 .adminShowToggle span{color:#aab3c5;font-size:13px}
 #admin-overview,#admin-signals,#admin-analysis,#admin-members,#admin-reports,#admin-proofs,#admin-marketing,#admin-referrals{scroll-margin-top:120px}
 @media(max-width:760px){.adminTabNav{top:60px}.adminTabNav button{font-size:12px;padding:9px 11px}}
+
+
+.adminFilterBar{display:grid;grid-template-columns:1.5fr 180px auto;gap:12px;align-items:center;margin:14px 0 18px;padding:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);border-radius:16px}
+.adminFilterBar input,.adminFilterBar select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b1220;color:#fff;outline:none}
+.adminFilterBar span{color:#9fb0c8;font-size:13px;white-space:nowrap}
+@media(max-width:760px){.adminFilterBar{grid-template-columns:1fr}.adminFilterBar span{white-space:normal}}
