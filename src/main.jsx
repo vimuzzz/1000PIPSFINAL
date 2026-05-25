@@ -441,7 +441,6 @@ function App(){
 }
 
 function Home({setPage}){ 
-  const [showCouponPopup,setShowCouponPopup]=useState(true)
   return <>
     <header className="premiumHero">
       <div className="heroGlow"></div>
@@ -480,54 +479,8 @@ function Home({setPage}){
       </div>
     </header>
 
-    {showCouponPopup&&<div className="couponPopupOverlay" onClick={()=>setShowCouponPopup(false)}>
-      <div className="couponPopupCard" onClick={e=>e.stopPropagation()}>
-        <button className="couponPopupClose" onClick={()=>setShowCouponPopup(false)}>×</button>
-        <span className="couponPopupTag">SPECIAL VIP OFFER</span>
-        <h2>Use Coupon Code</h2>
-        <div className="couponPopupCode">WELCOME10</div>
-        <p>Apply this code during payment proof submission to get your VIP discount.</p>
-        <div className="couponPopupActions">
-          <button onClick={()=>{setShowCouponPopup(false);setPage('payment')}}>Use Coupon Now</button>
-          <button className="outlineBtn" onClick={()=>setShowCouponPopup(false)}>Maybe Later</button>
-        </div>
-      </div>
-    </div>}
 
     <AnnouncementsPanel mode="public"/>
-
-
-
-    <section className="section conversionFlowSection">
-      <p className="green">START IN 3 SIMPLE STEPS</p>
-      <h2>How To Join 1000PIPS VIP</h2>
-      <div className="conversionSteps">
-        <div><span>1</span><h3>Create Account</h3><p>Register your member account and choose the VIP plan that fits your trading journey.</p></div>
-        <div><span>2</span><h3>Submit Payment Proof</h3><p>Pay with PayPal, Skrill or Binance Pay and upload your payment screenshot for approval.</p></div>
-        <div><span>3</span><h3>Access VIP Signals</h3><p>After approval, you receive VIP Telegram instructions and can access dashboard signals, analysis and reports.</p></div>
-      </div>
-      <div className="conversionActionBox">
-        <div>
-          <h3>Ready to trade with more structure?</h3>
-          <p>Get premium signals, clear updates, weekly reports, archive transparency and Telegram alerts in one place.</p>
-        </div>
-        <button onClick={()=>setPage('plans')}>Choose VIP Plan</button>
-      </div>
-    </section>
-
-    <section className="section trustConversionSection">
-      <div>
-        <p className="green">WHY MEMBERS TRUST IT</p>
-        <h2>Not Just Signals — A Full Tracking System</h2>
-        <p>1000PIPS is designed to show the full trading process: signal given, status updates, TP/SL/BE results, weekly report archive, daily analysis follow-ups and member announcements.</p>
-      </div>
-      <div className="trustConversionGrid">
-        <div><strong>Live Status</strong><span>Running / TP Hit / SL / BE / Closed</span></div>
-        <div><strong>Weekly Proof</strong><span>Reports saved for transparency</span></div>
-        <div><strong>Analysis Updates</strong><span>Follow-up comments after market movement</span></div>
-        <div><strong>VIP Email</strong><span>Telegram access and reports by email</span></div>
-      </div>
-    </section>
 
     <section className="section">
       <p className="green">WHY 1000PIPS</p>
