@@ -190,7 +190,6 @@ function buildWeeklyReportText(report,trades=[]){
   const highlights=pickWeeklyHighlightTrades(trades,5)
   const lines=[
     '1000PIPS PERFORMANCE REPORT',
-    stats.weekLabel ? `Week: ${stats.weekLabel}` : '',
     `Weekly Pips: ${stats.weeklyPips ?? 0}`,
     `Win Rate: ${stats.winRate ?? 0}%`,
     `Wins: ${stats.wins ?? 0}`,
@@ -259,7 +258,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   y+=72
   ctx.fillStyle='#aab3c5'
   ctx.font='28px Arial'
-  ctx.fillText(stats.weekLabel ? `Week: ${stats.weekLabel}` : new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
+  ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
   y+=42
 
   const statItems=[
@@ -349,7 +348,7 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
       <div>
         <span className="weeklyPosterKicker">1000PIPS PERFORMANCE</span>
         <h3>{title}</h3>
-        <p>{stats.weekLabel ? `Week: ${stats.weekLabel}` : `${report?.period || 'Weekly'} · ${subDate}`}</p>
+        <p>{report?.period || 'Weekly'} · {subDate}</p>
       </div>
       <div className="weeklyPosterBrand">1000PIPS</div>
     </div>
@@ -438,6 +437,66 @@ function App(){
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
     {page==='admin' && <Admin user={user} setPage={setPage}/>} 
     <ProofLightboxController/><FloatingContactButtons/><Footer/>
+  </div>
+}
+
+
+function ApprovedTestimonials(){
+  const [items,setItems]=useState([])
+  const [msg,setMsg]=useState('')
+  useEffect(()=>{ load() },[])
+  async function load(){ try{ setItems(await api('/api/testimonials/public')) }catch(e){ setMsg(e.message) } }
+  const fallback=[
+    {rating:5,message:'The best thing is the clear structure: signals, chart analysis, pips tracking and Telegram updates.',userName:'VIP Member'},
+    {rating:5,message:'I like that every trade can be tracked with exact pips and the weekly report is easy to understand.',userName:'Gold Trader'},
+    {rating:5,message:'The analysis with chart images helps me understand the market better before taking a trade.',userName:'Forex Member'}
+  ]
+  const shown=items.length?items:fallback
+  return <section className="section testimonialSection">
+    <p className="green">SOCIAL PROOF</p>
+    <h2>What Members Say About 1000PIPS</h2>
+    {msg&&<p className="error">{msg}</p>}
+    <div className="testimonialGrid">
+      {shown.map((t,i)=><div className="testimonialCard" key={t._id||i}>
+        <div className="stars">{'★'.repeat(Number(t.rating||5))}</div>
+        <p>“{t.message}”</p>
+        <strong>{t.userName || 'VIP Member'}</strong>
+      </div>)}
+    </div>
+    <p className="smallNote">Note: Trading involves risk. Results depend on market conditions, discipline and risk management.</p>
+  </section>
+}
+
+function TestimonialSubmitBox({user}){
+  const [rating,setRating]=useState(5)
+  const [message,setMessage]=useState('')
+  const [msg,setMsg]=useState('')
+  const [loading,setLoading]=useState(false)
+  async function submit(e){
+    e.preventDefault(); setMsg(''); setLoading(true)
+    try{
+      await api('/api/testimonials',{method:'POST',body:JSON.stringify({rating,message})})
+      setMessage('')
+      setRating(5)
+      setMsg('Thank you bro. Your testimonial was submitted and is waiting for admin approval.')
+    }catch(err){ setMsg(err.message) } finally{ setLoading(false) }
+  }
+  if(!user) return null
+  return <div className="testimonialSubmitBox">
+    <h3>Share Your 1000PIPS Feedback</h3>
+    <p>Your feedback helps new members trust the process. Admin will approve before it appears on homepage.</p>
+    <form onSubmit={submit} className="form compact">
+      <select value={rating} onChange={e=>setRating(Number(e.target.value))}>
+        <option value="5">★★★★★ 5 Stars</option>
+        <option value="4">★★★★ 4 Stars</option>
+        <option value="3">★★★ 3 Stars</option>
+        <option value="2">★★ 2 Stars</option>
+        <option value="1">★ 1 Star</option>
+      </select>
+      <textarea required rows="4" placeholder="Write your feedback about 1000PIPS signals, analysis, dashboard or Telegram updates..." value={message} onChange={e=>setMessage(e.target.value)}/>
+      <button disabled={loading}>{loading?'Submitting...':'Submit Testimonial'}</button>
+    </form>
+    {msg&&<p className={msg.includes('Thank')?'success':'error'}>{msg}</p>}
   </div>
 }
 
@@ -600,32 +659,8 @@ function Home({setPage}){
       </div>
     </section>
 
-    <section className="section testimonialSection">
-      <p className="green">SOCIAL PROOF</p>
-      <h2>What Members Can Expect</h2>
-      <div className="testimonialGrid">
-        <div className="testimonialCard">
-          <div className="stars">★★★★★</div>
-          <p>“The best thing is the clear structure: signals, chart analysis, pips tracking and Telegram updates.”</p>
-          <strong>VIP Member</strong>
-        </div>
-        <div className="testimonialCard">
-          <div className="stars">★★★★★</div>
-          <p>“I like that every trade can be tracked with exact pips and the weekly report is easy to understand.”</p>
-          <strong>Gold Trader</strong>
-        </div>
-        <div className="testimonialCard">
-          <div className="stars">★★★★★</div>
-          <p>“The analysis with chart images helps me understand the market better before taking a trade.”</p>
-          <strong>Forex Member</strong>
-        </div>
-      </div>
-      <p className="smallNote">
-        Note: Trading involves risk. Results depend on market conditions, discipline and risk management.
-      </p>
-    </section>
+    <ApprovedTestimonials/>
 
-    
     <section className="section contactSalesSection">
       <div className="contactSalesInner">
         <div>
@@ -773,7 +808,7 @@ function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months
         {couponResult&&<div className="couponResultBox">
           <strong>{couponResult.code}</strong> applied — Original: ${couponResult.originalPrice} | Discount: ${couponResult.discount} | Final: ${couponResult.finalPrice}
         </div>}<label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
-function StatsCards({stats}){ return <><div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div>{stats.weekLabel&&<div className="weeklyCycleNotice"><strong>Weekly Cycle:</strong> Monday - Sunday · Current report week: {stats.weekLabel}. New weekly report starts fresh every Monday.</div>}</> }
+function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div> }
 function TradeCard({trade}){
   const statusLabel=signalStatusLabel(trade.status, trade.resultPips)
   const statusClass=signalStatusClass(trade.status, trade.resultPips)
@@ -860,7 +895,7 @@ function SignalDashboard({user,setPage}){
     <div className="listGrid">{filteredTrades.map(t=><TradeCard key={t._id} trade={t}/>)}{trades.length===0&&<p>No trades yet.</p>}{trades.length>0&&weeklyTrades.length===0&&<p>No current or last week trades yet.</p>}{weeklyTrades.length>0&&filteredTrades.length===0&&<p>No signals found for this filter.</p>}</div>
   </section>
 }
-function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
+function Vip({user,setPage}){ const[signals,setSignals]=useState([]),[analysis,setAnalysis]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ async function load(){ if(!user) return; try{ setSignals(await api('/api/vip/signals')); setAnalysis(await api('/api/vip/analysis')) }catch(e){ setMsg(e.message) } } load() },[user]); if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>; if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">{user.status==='expired'?'VIP EXPIRED':'VIP LOCKED'}</p><h2>{user.status==='expired'?'Your VIP Access Has Expired':'Waiting For Admin Approval'}</h2><p>Status: {user.status}</p><button onClick={()=>setPage('payment')}>Renew / Submit Payment</button></section>; return <section className="section"><p className="green">VIP AREA</p><h2>Premium Signals & VIP Analysis</h2><AnnouncementsPanel mode='vip' user={user}/>{isExpiringSoon(user.daysRemaining)&&<div className="expiryWarningBox"><h3>⚠️ VIP Renewal Reminder</h3><p>Your VIP access expires in <strong>{user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'}</strong>. Renew early to avoid losing VIP signals and analysis access.</p><button onClick={()=>setPage('payment')}>Renew VIP Now</button></div>}<div className="vipInfo"><strong>Access:</strong> {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days remaining`}<br/><strong>Expiry:</strong> {formatDate(user.vipExpiryDate)}</div><TestimonialSubmitBox user={user}/>{msg&&<p className="error">{msg}</p>}<div className="premiumTextSignalGrid">{signals.length===0?<p>No text signals posted yet.</p>:signals.map(s=><TextSignalCard key={s._id} signal={s}/>)}</div><div className="weeklyAutoNotice"><strong>Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{visibleWeeklyAnalysis(analysis).map(post=><AnalysisCard key={post._id} post={post}/>)}{analysis.length===0&&<p>No VIP analysis yet.</p>}{analysis.length>0&&visibleWeeklyAnalysis(analysis).length===0&&<p>No analysis from this week or last week.</p>}</div></section> }
 function ReferralCenter({user,setPage}){
   const [data,setData]=useState(null)
   const [msg,setMsg]=useState('')
@@ -957,6 +992,7 @@ function Admin({user,setPage}){
   const [proofs,setProofs]=useState([]),[proofForm,setProofForm]=useState({title:'VIP Result Proof',category:'Trading Result',description:'Real trading result from 1000PIPS.',visibility:'public'}),[proofImage,setProofImage]=useState(null),[proofPreview,setProofPreview]=useState('')
   const [memberSearch,setMemberSearch]=useState(''),[memberFilter,setMemberFilter]=useState('all')
   const [announcements,setAnnouncements]=useState([]),[announcementForm,setAnnouncementForm]=useState({title:'Important Market Update',message:'High impact news today. Trade carefully and follow risk management.',visibility:'vip',sendTelegram:false})
+  const [testimonials,setTestimonials]=useState([])
   const [adminView,setAdminView]=useState('overview'),[showAllAdmin,setShowAllAdmin]=useState({})
   const [adminTradeSearch,setAdminTradeSearch]=useState(''),[adminTradeFilter,setAdminTradeFilter]=useState('all')
   const [adminAnalysisSearch,setAdminAnalysisSearch]=useState(''),[adminAnalysisFilter,setAdminAnalysisFilter]=useState('all')
@@ -987,7 +1023,7 @@ TP2:
 ${t.notes}`,sendTelegram:true})
     setMsg(`${t.label} template loaded. Add Entry, SL and TP levels before posting.`)
   }
-  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,sig,pr,cp,refs,anns]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/signals'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals'),api('/api/admin/announcements')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setTextSignals(sig); setProofs(pr); setCoupons(cp); setAdminReferrals(refs); setAnnouncements(anns); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
+  async function loadAdmin(){ setMsg(''); try{ const [u,p,rpt,rep,an,tr,sig,pr,cp,refs,anns,tes]=await Promise.all([api('/api/admin/users'),api('/api/admin/payments'),api('/api/admin/report'),api('/api/vip/reports'),api('/api/vip/analysis'),api('/api/vip/trades'),api('/api/vip/signals'),api('/api/vip/proofs'),api('/api/admin/coupons'),api('/api/admin/referrals'),api('/api/admin/announcements'),api('/api/admin/testimonials')]); setUsers(u); setPayments(p); setReport(rpt); setReports(rep); setAnalysis(an); setTrades(tr); setTextSignals(sig); setProofs(pr); setCoupons(cp); setAdminReferrals(refs); setAnnouncements(anns); setTestimonials(tes); setMsg('Admin data refreshed.') }catch(e){ setMsg(e.message) } }
   useEffect(()=>{ if(user?.role==='admin') loadAdmin() },[user])
   if(!user) return <section className="section narrow"><h2>Admin Login Required</h2><button onClick={()=>setPage('login')}>Login</button></section>
   if(user.role!=='admin') return <section className="section narrow"><h2>Admin Access Required</h2></section>
@@ -1042,6 +1078,8 @@ ${t.notes}`,sendTelegram:true})
     if(!window.confirm('Delete this announcement?')) return
     try{ await api(`/api/admin/announcements/${id}`,{method:'DELETE'}); setMsg('Announcement deleted.'); await loadAdmin() }catch(err){ setMsg(err.message) }
   }
+  async function approveTestimonial(id){ try{ await api(`/api/admin/testimonials/${id}/approve`,{method:'PUT'}); setMsg('Testimonial approved.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function deleteTestimonial(id){ if(!window.confirm('Delete this testimonial?')) return; try{ await api(`/api/admin/testimonials/${id}`,{method:'DELETE'}); setMsg('Testimonial deleted.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function approve(id){ await api(`/api/admin/payments/${id}/approve`,{method:'PUT'}); await loadAdmin() }
   async function viewShot(id){ try{ const d=await api(`/api/admin/payments/${id}/screenshot`); setViewer(`data:${d.screenshotMime};base64,${d.screenshotData}`) }catch(e){ setMsg(e.message) } }
   async function createCoupon(e){ e.preventDefault(); try{ await api('/api/admin/coupons',{method:'POST',body:JSON.stringify(couponForm)}); setMsg('Coupon created successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
@@ -1130,6 +1168,22 @@ ${t.notes}`,sendTelegram:true})
             <div className="rowBtns"><button onClick={()=>deleteAnnouncement(a._id)}>Delete</button></div>
           </div>)}
         </div>
+      </div>
+
+
+      <div className="adminBox full testimonialAdminBox">
+        <h3>Member Testimonials / Reviews</h3>
+        {testimonials.length===0&&<p>No testimonials submitted yet.</p>}
+        {adminItems(testimonials,'testimonials').map(t=><div className="adminRow" key={t._id}>
+          <strong>{t.userName || 'VIP Member'} · {'★'.repeat(Number(t.rating||5))}</strong>
+          <p>{t.message}</p>
+          <p>Status: {t.status} | Email: {t.userEmail}</p>
+          <div className="rowBtns">
+            {t.status!=='approved'&&<button onClick={()=>approveTestimonial(t._id)}>Approve</button>}
+            <button onClick={()=>deleteTestimonial(t._id)}>Delete</button>
+          </div>
+        </div>)}
+        <AdminShowToggle itemsKey="testimonials" total={testimonials.length}/>
       </div>
 
       <div className="adminBox full"><h3>Coupon / Discount Codes</h3>
