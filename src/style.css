@@ -1296,3 +1296,85 @@ footer h2{color:#00ff88}
 
 .weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
 .weeklyAutoNotice strong{color:#7efcc6}
+
+
+/* Social Media Links Upgrade */
+.socialMediaSection{
+  background:
+    radial-gradient(circle at 12% 20%,rgba(0,255,136,.10),transparent 35%),
+    linear-gradient(135deg,#080808,#07100b);
+  border:1px solid rgba(0,255,136,.18);
+  border-radius:30px;
+  padding:46px!important;
+}
+.socialMediaInner{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:26px;
+  align-items:center;
+}
+.socialMediaInner p{
+  color:#d0d0d0;
+  line-height:1.7;
+}
+.socialMediaCards{
+  display:grid;
+  gap:16px;
+}
+.socialMediaCard{
+  display:block;
+  background:#070707;
+  border:1px solid rgba(0,255,136,.24);
+  border-radius:22px;
+  padding:22px;
+  color:#fff!important;
+  text-decoration:none;
+  transition:.2s ease;
+}
+.socialMediaCard:hover{
+  transform:translateY(-3px);
+  border-color:#00ff88;
+}
+.socialMediaCard span{
+  display:inline-block;
+  color:#000;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+.instagramSocial span{background:linear-gradient(135deg,#ffdc80,#fcaf45,#e1306c,#833ab4);color:#fff}
+.facebookSocial span{background:#1877F2;color:#fff}
+.socialMediaCard strong{
+  display:block;
+  font-size:24px;
+  margin-bottom:6px;
+}
+.socialMediaCard small{
+  color:#d0d0d0;
+  line-height:1.6;
+}
+.footerSocialLinks{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.footerSocialLinks a{
+  background:#111;
+  border:1px solid rgba(0,255,136,.35);
+  color:#00ff88!important;
+  border-radius:999px;
+  padding:9px 14px;
+  font-weight:900;
+}
+.footerSocialLinks a:hover{
+  background:#00ff88;
+  color:#000!important;
+}
+@media(max-width:950px){
+  .socialMediaInner{grid-template-columns:1fr}
+  .socialMediaSection{padding:34px 20px!important}
+}

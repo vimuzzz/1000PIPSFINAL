@@ -10,6 +10,8 @@ const BINANCE_PAY_ID='41356322'
 const TELEGRAM_FREE='https://t.me/ForexHubbSignals'
 const WHATSAPP_CONTACT='https://wa.me/94781170977'
 const TELEGRAM_CONTACT='https://t.me/pips1000x'
+const INSTAGRAM_LINK='https://www.instagram.com/1000pips?igsh=MTE3Nm85bHlubWFheg=='
+const FACEBOOK_LINK='https://www.facebook.com/share/1Crxa8YCs8/'
 
 function getToken(){ return localStorage.getItem('token') }
 async function api(path, options={}){
@@ -118,7 +120,7 @@ function tradeFilterMatch(trade, filter){
   return true
 }
 function filterCount(trades, key){ return trades.filter(t=>tradeFilterMatch(t,key)).length }
-function tradeStatusFromPips(pips){ const n=Number(pips); if(n===0) return 'breakeven'; return 'closed' }
+function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp2'; if(n<0) return 'sl'; return 'breakeven' }
 function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(user.daysRemaining)) return <div className="warningBadge">VIP expires in {user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'} · Renew soon</div>; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
@@ -692,6 +694,29 @@ function Home({setPage}){
     </section>
 
     
+
+    <section className="section socialMediaSection">
+      <div className="socialMediaInner">
+        <div>
+          <p className="green">FOLLOW 1000PIPS</p>
+          <h2>Connect With Us On Social Media</h2>
+          <p>Follow our Instagram and Facebook page for updates, market insights, proof posts, announcements and 1000PIPS brand content.</p>
+        </div>
+        <div className="socialMediaCards">
+          <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="socialMediaCard instagramSocial">
+            <span>Instagram</span>
+            <strong>@1000pips</strong>
+            <small>Follow market updates, proof posts and announcements.</small>
+          </a>
+          <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="socialMediaCard facebookSocial">
+            <span>Facebook</span>
+            <strong>1000PIPS Page</strong>
+            <small>Follow our Facebook page for public updates and community trust.</small>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <section className="section finalSalesCta">
       <p className="green">START TODAY</p>
       <h2>Join 1000PIPS VIP And Trade With More Structure</h2>
@@ -1039,7 +1064,7 @@ ${t.notes}`,sendTelegram:true})
   async function deleteTextSignal(id){ if(!window.confirm('Delete this text signal permanently? This is best for demo/test signals only.')) return; try{ await api(`/api/admin/signals/${id}`,{method:'DELETE'}); setMsg('Text signal deleted successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function deleteArchiveReport(id){ if(!window.confirm('Delete this archived report permanently?')) return; try{ await api(`/api/admin/reports/${id}`,{method:'DELETE'}); setMsg('Archived report deleted successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function addTrade(e){ e.preventDefault(); try{ await api('/api/admin/trades',{method:'POST',body:JSON.stringify(trade)}); setMsg('Trade signal added successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
-  async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips), manualClose:true})}); setMsg('Trade manually closed with exact pips.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
+  async function updateTrade(id, pips){ try{ await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify({status:tradeStatusFromPips(pips), resultPips:Number(pips)})}); setMsg('Trade result updated.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
   async function setTradeStatus(id, status, resultPips=null){ try{ const payload={status}; if(resultPips!==null) payload.resultPips=Number(resultPips); await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify(payload)}); setMsg(`Signal status updated: ${signalStatusLabel(status, resultPips??0)}`); await loadAdmin() }catch(err){ setMsg(err.message) } }
   function startEditTrade(t){ setEditingTrade({ _id:t._id, pair:t.pair||'', category:t.category||'Forex', direction:t.direction||'BUY', entry:t.entry||'', stopLoss:t.stopLoss||'', takeProfit1:t.takeProfit1||'', takeProfit2:t.takeProfit2||'', riskReward:t.riskReward||'', notes:t.notes||'', status:t.status||'active', resultPips:t.resultPips||0 }) }
   async function saveTradeEdit(e){ e.preventDefault(); if(!editingTrade?._id) return; try{ const {_id,...payload}=editingTrade; payload.resultPips=Number(payload.resultPips||0); await api(`/api/admin/trades/${_id}`,{method:'PUT',body:JSON.stringify(payload)}); setEditingTrade(null); setMsg('Trade signal edited successfully.'); await loadAdmin() }catch(err){ setMsg(err.message) } }
@@ -1260,7 +1285,14 @@ function FloatingContactButtons(){
   </div>
 }
 
-function Footer(){ return <footer><h2>1000PIPS</h2><p>Professional Forex Signals & Market Analysis</p></footer> }
+function Footer(){ return <footer>
+  <h2>1000PIPS</h2>
+  <p>Professional Forex Signals & Market Analysis</p>
+  <div className="footerSocialLinks">
+    <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer">Instagram</a>
+    <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer">Facebook</a>
+  </div>
+</footer> }
 
 
 class ErrorBoundary extends React.Component{
