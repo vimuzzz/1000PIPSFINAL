@@ -1297,84 +1297,43 @@ footer h2{color:#00ff88}
 .weeklyAutoNotice{margin:14px 0 18px;padding:14px 16px;border-radius:16px;background:rgba(0,245,155,.08);border:1px solid rgba(0,245,155,.22);color:#dfffea;line-height:1.5}
 .weeklyAutoNotice strong{color:#7efcc6}
 
-
-/* Social Media Links Upgrade */
-.socialMediaSection{
-  background:
-    radial-gradient(circle at 12% 20%,rgba(0,255,136,.10),transparent 35%),
-    linear-gradient(135deg,#080808,#07100b);
-  border:1px solid rgba(0,255,136,.18);
-  border-radius:30px;
-  padding:46px!important;
-}
-.socialMediaInner{
+/* Signal Rules / Member Guide Restored */
+.rulesPromoSection{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:26px;
+  grid-template-columns:1fr auto;
+  gap:22px;
   align-items:center;
+  background:linear-gradient(135deg,#07100b,#080808);
+  border:1px solid rgba(0,255,136,.22);
+  border-radius:28px;
+  padding:34px!important;
 }
-.socialMediaInner p{
-  color:#d0d0d0;
-  line-height:1.7;
+.rulesPromoSection h2{font-size:clamp(26px,4vw,42px);margin:10px 0 12px}
+.rulesPromoSection p{color:#d0d0d0;line-height:1.7}
+.rulesPromoSection button,.rulesHeroActions button,.miniRulesBtn{
+  background:#00ff88!important;color:#000!important;border:none!important;border-radius:999px!important;padding:13px 20px!important;font-weight:900!important;
 }
-.socialMediaCards{
-  display:grid;
-  gap:16px;
-}
-.socialMediaCard{
-  display:block;
-  background:#070707;
+.rulesHero{
+  background:radial-gradient(circle at 20% 20%,rgba(0,255,136,.14),transparent 35%),linear-gradient(135deg,#07100b,#080808);
   border:1px solid rgba(0,255,136,.24);
-  border-radius:22px;
-  padding:22px;
-  color:#fff!important;
-  text-decoration:none;
-  transition:.2s ease;
+  border-radius:30px;
+  padding:44px;
 }
-.socialMediaCard:hover{
-  transform:translateY(-3px);
-  border-color:#00ff88;
-}
-.socialMediaCard span{
-  display:inline-block;
-  color:#000;
-  border-radius:999px;
-  padding:7px 12px;
-  font-size:12px;
-  font-weight:900;
-  margin-bottom:12px;
-}
-.instagramSocial span{background:linear-gradient(135deg,#ffdc80,#fcaf45,#e1306c,#833ab4);color:#fff}
-.facebookSocial span{background:#1877F2;color:#fff}
-.socialMediaCard strong{
-  display:block;
-  font-size:24px;
-  margin-bottom:6px;
-}
-.socialMediaCard small{
-  color:#d0d0d0;
-  line-height:1.6;
-}
-.footerSocialLinks{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-top:16px;
-}
-.footerSocialLinks a{
-  background:#111;
-  border:1px solid rgba(0,255,136,.35);
-  color:#00ff88!important;
-  border-radius:999px;
-  padding:9px 14px;
-  font-weight:900;
-}
-.footerSocialLinks a:hover{
-  background:#00ff88;
-  color:#000!important;
-}
-@media(max-width:950px){
-  .socialMediaInner{grid-template-columns:1fr}
-  .socialMediaSection{padding:34px 20px!important}
-}
+.rulesHero h2{font-size:clamp(34px,6vw,64px);line-height:1;margin:12px 0 18px}
+.rulesHero p{color:#d7d7d7;line-height:1.75;max-width:820px;font-size:18px}
+.rulesHeroActions{display:flex;gap:14px;flex-wrap:wrap;margin-top:22px}
+.rulesHeroActions .outlineBtn{background:transparent!important;color:#00ff88!important;border:1px solid #00ff88!important}
+.rulesGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:28px 0}
+.ruleCard{background:#0b0b0b;border:1px solid rgba(0,255,136,.2);border-radius:22px;padding:22px;color:#fff}
+.ruleCard span{display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;background:#00ff88;color:#000;border-radius:999px;font-weight:900;margin-bottom:14px}
+.ruleCard h3{color:#00ff88;margin-bottom:10px}.ruleCard p{color:#d0d0d0;line-height:1.65}
+.importantRule{border-color:#00ff88!important;box-shadow:0 18px 60px rgba(0,255,136,.08)}
+.rulesTimeline,.rulesStatusGuide,.rulesDisclaimer{background:#0b0b0b;border:1px solid rgba(0,255,136,.2);border-radius:26px;padding:26px;margin-top:24px}
+.rulesTimeline h3,.rulesStatusGuide h3,.rulesDisclaimer h3{color:#00ff88;margin-bottom:18px;font-size:26px}
+.timelineSteps{display:grid;gap:12px}.timelineSteps div{display:flex;gap:12px;align-items:center;background:#050505;border-radius:16px;padding:14px}.timelineSteps b{background:#00ff88;color:#000;border-radius:999px;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center}.timelineSteps span{color:#d0d0d0}
+.statusGuideGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.statusGuideGrid div{background:#050505;border-radius:16px;padding:16px}.statusGuideGrid strong{color:#fff}.statusGuideGrid p,.rulesDisclaimer p{color:#d0d0d0;line-height:1.7}.miniRulesBtn{margin-top:12px!important}
+
+/* Social Media Links */
+.socialMediaSection{background:linear-gradient(135deg,#080808,#07100b);border:1px solid rgba(0,255,136,.18);border-radius:30px;padding:44px!important}
+.socialMediaInner{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center}.socialMediaInner p{color:#d0d0d0;line-height:1.7}.socialMediaCards{display:grid;grid-template-columns:1fr 1fr;gap:16px}.socialMediaCard{display:block;background:#070707;border:1px solid rgba(0,255,136,.24);border-radius:22px;padding:22px;color:#fff!important;text-decoration:none;transition:.2s ease}.socialMediaCard:hover{transform:translateY(-3px);border-color:#00ff88}.socialMediaCard span{display:inline-block;background:#00ff88;color:#000;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:900;margin-bottom:12px}.socialMediaCard strong{display:block;font-size:24px;margin-bottom:8px}.socialMediaCard small{color:#d0d0d0;line-height:1.5}.footerSocialLinks{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}.footerSocialLinks a{background:#111;border:1px solid rgba(0,255,136,.28);border-radius:999px;padding:10px 15px;color:#00ff88!important;font-weight:900}
+@media(max-width:950px){.rulesPromoSection,.socialMediaInner{grid-template-columns:1fr;padding:26px!important}.rulesGrid,.statusGuideGrid,.socialMediaCards{grid-template-columns:1fr}.rulesHero{padding:30px 22px}}
