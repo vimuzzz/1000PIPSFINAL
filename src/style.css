@@ -500,15 +500,39 @@ footer h2{color:#00ff88}
 }
 .proofScreenshotGrid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
+  grid-auto-flow:column;
+  grid-auto-columns:minmax(320px,360px);
+  gap:22px;
   margin-top:24px;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  padding:6px 4px 14px;
+  scrollbar-width:thin;
+  scrollbar-color:#00ff88 #0b0b0b;
+}
+.proofScreenshotGrid::-webkit-scrollbar{
+  height:10px;
+}
+.proofScreenshotGrid::-webkit-scrollbar-track{
+  background:#0b0b0b;
+  border-radius:999px;
+}
+.proofScreenshotGrid::-webkit-scrollbar-thumb{
+  background:#00ff88;
+  border-radius:999px;
+}
+.proofScreenshotGrid > p{
+  min-width:100%;
 }
 .proofScreenshotCard{
   background:linear-gradient(180deg,#111,#070707);
   border:1px solid rgba(0,255,136,.22);
   border-radius:24px;
   overflow:hidden;
+  scroll-snap-align:start;
+  min-height:100%;
 }
 .proofScreenshotCard img{
   width:100%;
@@ -544,7 +568,9 @@ footer h2{color:#00ff88}
     padding:34px 20px!important;
   }
   .proofScreenshotGrid{
-    grid-template-columns:1fr;
+    grid-auto-columns:minmax(280px,86vw);
+    gap:16px;
+    padding-bottom:12px;
   }
   .proofScreenshotCard img{
     height:auto;
@@ -1349,51 +1375,3 @@ footer h2{color:#00ff88}
 .trustpilotCard strong{display:block;font-size:28px;margin-bottom:8px}
 .trustpilotCard small{color:#d0d0d0;line-height:1.5}
 @media(max-width:950px){.trustpilotInner{grid-template-columns:1fr}.trustpilotSection{padding:30px 20px!important}}
-
-
-/* Compact Support Strip */
-.supportStripSection{
-  background:linear-gradient(135deg,#07100b,#080808);
-  border:1px solid rgba(0,255,136,.2);
-  border-radius:28px;
-  padding:28px 32px!important;
-}
-.supportStripInner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:22px;
-}
-.supportStripInner h2{
-  font-size:clamp(24px,3.2vw,38px);
-  margin:8px 0 10px;
-}
-.supportStripInner p{
-  color:#d0d0d0;
-  line-height:1.6;
-}
-.supportStripActions{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.supportBtn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:130px;
-  border-radius:999px;
-  padding:13px 18px;
-  font-weight:900;
-  color:#000!important;
-  text-decoration:none!important;
-}
-.whatsappSupport{background:#25D366!important}
-.telegramSupport{background:#24A1DE!important}
-.supportBtn:hover{transform:translateY(-2px)}
-@media(max-width:950px){
-  .supportStripSection{padding:24px 20px!important}
-  .supportStripInner{display:grid;grid-template-columns:1fr}
-  .supportStripActions{justify-content:flex-start}
-}
