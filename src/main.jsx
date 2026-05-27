@@ -425,7 +425,7 @@ function App(){
         <button onClick={()=>setPage('dashboard')}>Dashboard</button>
         <button onClick={()=>setPage('vip')}>VIP Area</button>
         <button onClick={()=>setPage('rules')}>Signal Rules</button>
-        <button onClick={()=>setPage('referrals')}>Referrals</button><button onClick={()=>setPage('admin')}>Admin</button>
+        <button onClick={()=>setPage('referrals')}>Referrals</button>{user?.role==='admin'&&<button onClick={()=>setPage('admin')}>Admin</button>}
         {user ? <button onClick={logout}>Logout</button> : <button onClick={()=>setPage('login')}>Login</button>}
       </div>
     </nav>

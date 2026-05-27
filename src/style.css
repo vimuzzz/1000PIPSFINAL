@@ -1370,3 +1370,9 @@ footer h2{color:#00ff88}
 .trustpilotCard strong{display:block;font-size:28px;margin-bottom:8px}
 .trustpilotCard small{color:#d0d0d0;line-height:1.5}
 @media(max-width:950px){.trustpilotInner{grid-template-columns:1fr}.trustpilotSection{padding:30px 20px!important}}
+
+/* Center Daily Market Analysis Section Hotfix */
+.dailyBlogStrategy{
+  margin:58px auto!important;
+  width:min(1180px,92%)!important;
+}
