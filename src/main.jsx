@@ -1,5 +1,5 @@
 
-import React,{useEffect,useRef,useState} from 'react'
+import React,{useEffect,useState} from 'react'
 import ReactDOM from 'react-dom/client'
 import './style.css'
 
@@ -425,7 +425,8 @@ function App(){
         <button onClick={()=>setPage('dashboard')}>Dashboard</button>
         <button onClick={()=>setPage('vip')}>VIP Area</button>
         <button onClick={()=>setPage('rules')}>Signal Rules</button>
-        <button onClick={()=>setPage('referrals')}>Referrals</button>{user?.role==='admin'&&<button onClick={()=>setPage('admin')}>Admin</button>}
+        <button onClick={()=>setPage('referrals')}>Referrals</button>
+        {user?.role==='admin' && <button onClick={()=>setPage('admin')}>Admin</button>}
         {user ? <button onClick={logout}>Logout</button> : <button onClick={()=>setPage('login')}>Login</button>}
       </div>
     </nav>
@@ -727,10 +728,10 @@ function Home({setPage}){
 
     <section className="section socialMediaSection">
       <div className="socialMediaInner">
-        <div className="socialMediaIntro">
+        <div>
           <p className="green">FOLLOW 1000PIPS</p>
-          <h2>Stay Connected With 1000PIPS</h2>
-          <p>Follow our official Instagram and Facebook pages for updates, market insights, proof posts and announcements.</p>
+          <h2>Connect With Us On Social Media</h2>
+          <p>Follow our Instagram and Facebook page for updates, market insights, proof posts, announcements and 1000PIPS brand content.</p>
         </div>
         <div className="socialMediaCards">
           <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="socialMediaCard instagramSocial">
@@ -1000,30 +1001,17 @@ function Archive({user,setPage}){
 function ProofGallery({limit=6}){
   const [proofs,setProofs]=useState([])
   const [msg,setMsg]=useState('')
-  const [autoPaused,setAutoPaused]=useState(false)
-  const sliderRef = useRef(null)
   useEffect(()=>{ load() },[])
   async function load(){
     try{ setProofs(await api('/api/proofs/public')) }catch(e){ setMsg(e.message) }
   }
+
   const shown = limit ? proofs.slice(0,limit) : proofs
-  useEffect(()=>{
-    const el = sliderRef.current
-    if(!el || shown.length<=1 || autoPaused) return
-    const move = ()=>{
-      const firstCard = el.querySelector('.proofScreenshotCard')
-      if(!firstCard) return
-      const cardWidth = firstCard.getBoundingClientRect().width
-      const styles = window.getComputedStyle(el)
-      const gap = parseFloat(styles.columnGap || styles.gap || '22') || 22
-      const nextStep = cardWidth + gap
-      const maxLeft = el.scrollWidth - el.clientWidth - 4
-      if(el.scrollLeft + nextStep >= maxLeft) el.scrollTo({left:0,behavior:'smooth'})
-      else el.scrollBy({left:nextStep,behavior:'smooth'})
-    }
-    const timer = setInterval(move, 3200)
-    return ()=>clearInterval(timer)
-  },[shown.length,autoPaused])
+  const shouldSlide = shown.length > 1
+  const loopItems = shouldSlide ? [...shown, ...shown] : shown
+  const slideDistance = shown.length * 340
+  const slideDuration = Math.max(18, shown.length * 6)
+
   return <section className="section realProofSection">
     <p className="green">REAL PROOF</p>
     <h2>Trading Results, Feedback & Proof Screenshots</h2>
@@ -1032,28 +1020,25 @@ function ProofGallery({limit=6}){
     </p>
     <div className="proofTopBar">
       <button className="refresh" onClick={load}>Refresh Proof</button>
-      <small>Auto sliding gallery · hover or touch to pause</small>
+      {shown.length>1 && <small className="proofSliderHelp">Auto sliding gallery · hover or touch to pause</small>}
     </div>
     {msg&&<p className="error">{msg}</p>}
-    <div
-      className="proofScreenshotGrid"
-      ref={sliderRef}
-      onMouseEnter={()=>setAutoPaused(true)}
-      onMouseLeave={()=>setAutoPaused(false)}
-      onTouchStart={()=>setAutoPaused(true)}
-      onTouchEnd={()=>setAutoPaused(false)}
-    >
-      {shown.length===0&&<p>No proof screenshots posted yet.</p>}
-      {shown.map(p=><div key={p._id} className="proofScreenshotCard">
-        {p.proofImageData&&<img src={imgSrcFromProof(p)} alt={p.title}/>}
-        <div className="proofScreenshotBody">
-          <span>{p.category}</span>
-          <h3>{p.title}</h3>
-          <p>{p.description}</p>
-          <small>{new Date(p.createdAt).toLocaleDateString()}</small>
-        </div>
-      </div>)}
-    </div>
+    {shown.length===0 ? <p>No proof screenshots posted yet.</p> : <div className="proofSliderOuter" style={{'--proof-slide-distance': `${slideDistance}px`, '--proof-slide-duration': `${slideDuration}s`}}>
+      <div className={`proofSliderTrack ${shouldSlide?'animate':''}`}>
+        {loopItems.map((p,index)=><div key={`${p._id}-${index}`} className="proofScreenshotCard proofSlideCard">
+          <button type="button" className="proofImageButton">
+            {p.proofImageData&&<img src={imgSrcFromProof(p)} alt={p.title}/>}
+            <span className="zoomHint">Click to enlarge</span>
+          </button>
+          <div className="proofScreenshotBody">
+            <span>{p.category}</span>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <small>{new Date(p.createdAt).toLocaleDateString()}</small>
+          </div>
+        </div>)}
+      </div>
+    </div>}
   </section>
 }
 

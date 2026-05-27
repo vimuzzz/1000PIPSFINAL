@@ -498,17 +498,6 @@ footer h2{color:#00ff88}
   border-radius:30px;
   padding:48px!important;
 }
-.proofTopBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  flex-wrap:wrap;
-}
-.proofTopBar small{
-  color:#9fd9b9;
-  font-size:13px;
-}
 .proofScreenshotGrid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -1345,19 +1334,9 @@ footer h2{color:#00ff88}
 .statusGuideGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.statusGuideGrid div{background:#050505;border-radius:16px;padding:16px}.statusGuideGrid strong{color:#fff}.statusGuideGrid p,.rulesDisclaimer p{color:#d0d0d0;line-height:1.7}.miniRulesBtn{margin-top:12px!important}
 
 /* Social Media Links */
-.socialMediaSection{background:linear-gradient(135deg,#080808,#07100b);border:1px solid rgba(0,255,136,.18);border-radius:30px;padding:34px!important}
-.socialMediaInner{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:center}
-.socialMediaIntro h2{font-size:clamp(32px,4vw,56px);line-height:1.08;margin-bottom:12px}
-.socialMediaInner p{color:#d0d0d0;line-height:1.7}
-.socialMediaCards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.socialMediaCard{display:block;background:#070707;border:1px solid rgba(0,255,136,.24);border-radius:22px;padding:20px;color:#fff!important;text-decoration:none;transition:.2s ease}
-.socialMediaCard:hover{transform:translateY(-3px);border-color:#00ff88}
-.socialMediaCard span{display:inline-block;background:#00ff88;color:#000;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:900;margin-bottom:12px}
-.socialMediaCard strong{display:block;font-size:22px;margin-bottom:8px}
-.socialMediaCard small{color:#d0d0d0;line-height:1.5}
-.footerSocialLinks{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}
-.footerSocialLinks a{background:#111;border:1px solid rgba(0,255,136,.28);border-radius:999px;padding:10px 15px;color:#00ff88!important;font-weight:900}
-@media(max-width:950px){.rulesPromoSection,.socialMediaInner{grid-template-columns:1fr;padding:26px!important}.rulesGrid,.statusGuideGrid,.socialMediaCards{grid-template-columns:1fr}.rulesHero{padding:30px 22px}.socialMediaSection{padding:28px 20px!important}.proofTopBar{align-items:flex-start}}
+.socialMediaSection{background:linear-gradient(135deg,#080808,#07100b);border:1px solid rgba(0,255,136,.18);border-radius:30px;padding:44px!important}
+.socialMediaInner{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center}.socialMediaInner p{color:#d0d0d0;line-height:1.7}.socialMediaCards{display:grid;grid-template-columns:1fr 1fr;gap:16px}.socialMediaCard{display:block;background:#070707;border:1px solid rgba(0,255,136,.24);border-radius:22px;padding:22px;color:#fff!important;text-decoration:none;transition:.2s ease}.socialMediaCard:hover{transform:translateY(-3px);border-color:#00ff88}.socialMediaCard span{display:inline-block;background:#00ff88;color:#000;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:900;margin-bottom:12px}.socialMediaCard strong{display:block;font-size:24px;margin-bottom:8px}.socialMediaCard small{color:#d0d0d0;line-height:1.5}.footerSocialLinks{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}.footerSocialLinks a{background:#111;border:1px solid rgba(0,255,136,.28);border-radius:999px;padding:10px 15px;color:#00ff88!important;font-weight:900}
+@media(max-width:950px){.rulesPromoSection,.socialMediaInner{grid-template-columns:1fr;padding:26px!important}.rulesGrid,.statusGuideGrid,.socialMediaCards{grid-template-columns:1fr}.rulesHero{padding:30px 22px}}
 
 
 /* Trustpilot Review Link Section */
@@ -1371,8 +1350,21 @@ footer h2{color:#00ff88}
 .trustpilotCard small{color:#d0d0d0;line-height:1.5}
 @media(max-width:950px){.trustpilotInner{grid-template-columns:1fr}.trustpilotSection{padding:30px 20px!important}}
 
-/* Center Daily Market Analysis Section Hotfix */
-.dailyBlogStrategy{
-  margin:58px auto!important;
-  width:min(1180px,92%)!important;
+
+/* Final homepage layout + proof auto slider hotfix */
+.navLinks{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dailyBlogStrategy{margin-left:auto!important;margin-right:auto!important}
+.proofTopBar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px}
+.proofSliderHelp{color:#9adfb9;opacity:.92}
+.proofSliderOuter{margin-top:22px;overflow:hidden;position:relative;width:100%}
+.proofSliderTrack{display:flex;gap:20px;width:max-content;align-items:stretch;will-change:transform}
+.proofSliderTrack.animate{animation:proofAutoSlide var(--proof-slide-duration,24s) linear infinite}
+.proofSliderOuter:hover .proofSliderTrack,.proofSliderOuter:active .proofSliderTrack{animation-play-state:paused}
+.proofSlideCard{flex:0 0 300px;max-width:300px;min-height:100%}
+.proofSlideCard .proofImageButton{display:block}
+.proofSlideCard img{width:100%;height:210px;object-fit:cover;display:block;background:#050505}
+@keyframes proofAutoSlide{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--proof-slide-distance,0px)))}}
+@media(max-width:950px){
+  .proofSlideCard{flex:0 0 86vw;max-width:86vw}
+  .proofSliderHelp{font-size:12px}
 }
