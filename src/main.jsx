@@ -14,6 +14,38 @@ const TRUSTPILOT_LINK='https://www.trustpilot.com/review/1000pipsfx.com'
 const INSTAGRAM_LINK='https://www.instagram.com/1000pips?igsh=MTE3Nm85bHlubWFheg=='
 const FACEBOOK_LINK='https://www.facebook.com/share/1Crxa8YCs8/'
 
+function InstagramIcon({size=26,className=''}){
+  return <svg viewBox="0 0 64 64" width={size} height={size} className={className} aria-hidden="true">
+    <defs>
+      <linearGradient id="igGrad1000" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#feda75"/>
+        <stop offset="35%" stopColor="#fa7e1e"/>
+        <stop offset="60%" stopColor="#d62976"/>
+        <stop offset="85%" stopColor="#962fbf"/>
+        <stop offset="100%" stopColor="#4f5bd5"/>
+      </linearGradient>
+    </defs>
+    <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#igGrad1000)"/>
+    <rect x="19" y="19" width="26" height="26" rx="9" fill="none" stroke="white" strokeWidth="4"/>
+    <circle cx="32" cy="32" r="7" fill="none" stroke="white" strokeWidth="4"/>
+    <circle cx="45.5" cy="18.5" r="3.5" fill="white"/>
+  </svg>
+}
+
+function FacebookIcon({size=26,className=''}){
+  return <svg viewBox="0 0 64 64" width={size} height={size} className={className} aria-hidden="true">
+    <circle cx="32" cy="32" r="30" fill="#1877F2"/>
+    <path d="M36.6 20.5h5.4v-8.4h-6.4c-7.6 0-12.5 4.7-12.5 12.8v5.3H17v8.4h6.1v13.3h9.1V38.6h7.2l1.1-8.4h-8.3v-4.5c0-3.1 1.1-5.2 4.4-5.2z" fill="white"/>
+  </svg>
+}
+
+function TrustpilotIcon({size=28,className=''}){
+  return <svg viewBox="0 0 64 64" width={size} height={size} className={className} aria-hidden="true">
+    <rect x="6" y="6" width="52" height="52" rx="14" fill="#00B67A"/>
+    <path d="M32 15.5l5.1 10.3 11.4 1.7-8.2 8 1.9 11.3L32 41.5 21.8 46.8l1.9-11.3-8.2-8 11.4-1.7L32 15.5z" fill="white"/>
+  </svg>
+}
+
 function getToken(){ return localStorage.getItem('token') }
 async function api(path, options={}){
   const isForm = options.body instanceof FormData
@@ -610,7 +642,10 @@ function Home({setPage}){
           </p>
         </div>
         <a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer" className="trustpilotCard">
-          <span>Trustpilot</span>
+          <div className="brandLogoRow trustpilotLogoRow">
+            <TrustpilotIcon size={32}/>
+            <span>Trustpilot</span>
+          </div>
           <strong>Review 1000PIPSFX</strong>
           <small>Open our public Trustpilot profile</small>
         </a>
@@ -734,12 +769,18 @@ function Home({setPage}){
         </div>
         <div className="socialMediaCards">
           <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="socialMediaCard instagramSocial">
-            <span>Instagram</span>
+            <div className="brandLogoRow">
+              <InstagramIcon size={30}/>
+              <span>Instagram</span>
+            </div>
             <strong>@1000pips</strong>
             <small>Follow market updates, proof posts and announcements.</small>
           </a>
           <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="socialMediaCard facebookSocial">
-            <span>Facebook</span>
+            <div className="brandLogoRow">
+              <FacebookIcon size={30}/>
+              <span>Facebook</span>
+            </div>
             <strong>1000PIPS Page</strong>
             <small>Follow our Facebook page for public updates and community trust.</small>
           </a>
@@ -1374,8 +1415,9 @@ function Footer(){ return <footer>
   <h2>1000PIPS</h2>
   <p>Professional Forex Signals & Market Analysis</p>
   <div className="footerSocialLinks">
-    <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer">Instagram</a>
-    <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer">Facebook</a><a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer">Trustpilot</a>
+    <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="footerSocialBtn instagramBtn"><InstagramIcon size={20}/><span>Instagram</span></a>
+    <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="footerSocialBtn facebookBtn"><FacebookIcon size={20}/><span>Facebook</span></a>
+    <a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer" className="footerSocialBtn trustpilotBtn"><TrustpilotIcon size={20}/><span>Trustpilot</span></a>
   </div>
 </footer> }
 
