@@ -441,8 +441,11 @@ function App(){
     {page==='archive' && <Archive user={user} setPage={setPage}/>} 
     {page==='referrals' && <ReferralCenter user={user} setPage={setPage}/>} 
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
+    {page==='risk' && <RiskWarningPage setPage={setPage}/>}
+    {page==='terms' && <TermsPage setPage={setPage}/>}
+    {page==='privacy' && <PrivacyPolicyPage setPage={setPage}/>}
     {page==='admin' && <Admin user={user} setPage={setPage}/>} 
-    <ProofLightboxController/><FloatingContactButtons/><Footer/>
+    <ProofLightboxController/><FloatingContactButtons/><Footer setPage={setPage}/>
   </div>
 }
 
@@ -1396,6 +1399,65 @@ function ProofLightboxController(){
   </div>
 }
 
+
+function PolicyHero({label,title,children,setPage}){
+  return <section className="section legalPage">
+    <div className="legalHero">
+      <p className="green">{label}</p>
+      <h2>{title}</h2>
+      <p>{children}</p>
+      <button onClick={()=>setPage('home')}>Back to Home</button>
+    </div>
+  </section>
+}
+
+function RiskWarningPage({setPage}){
+  return <>
+    <PolicyHero label="1000PIPSFX LEGAL" title="Risk Warning" setPage={setPage}>
+      Trading Forex, Gold, Crypto, Indices and Oil involves risk. This page explains important risk information for all users and VIP members.
+    </PolicyHero>
+    <section className="section legalContent">
+      <div className="legalCard"><h3>No Profit Guarantee</h3><p>1000PIPSFX does not guarantee profit, income, pips, account growth or funded account success. Market conditions can change quickly and losses can happen even with a good trade plan.</p></div>
+      <div className="legalCard"><h3>Educational / Informational Purpose</h3><p>Signals, analysis, trade updates, reports and Telegram posts are provided for educational and informational purposes. They are not personal financial advice.</p></div>
+      <div className="legalCard"><h3>User Responsibility</h3><p>Every trader is responsible for their own trading decisions, lot size, leverage, stop loss, risk management and account protection.</p></div>
+      <div className="legalCard"><h3>Use Proper Risk Management</h3><p>Always use stop loss and avoid over-risking. We recommend members trade with discipline and never risk money they cannot afford to lose.</p></div>
+      <div className="legalCard"><h3>High-Impact News</h3><p>Economic news, geopolitical events and sudden volatility can invalidate analysis and cause slippage, spread widening or fast price movement.</p></div>
+    </section>
+  </>
+}
+
+function TermsPage({setPage}){
+  return <>
+    <PolicyHero label="1000PIPSFX LEGAL" title="Terms & Conditions" setPage={setPage}>
+      These terms explain the basic rules for using 1000PIPSFX, VIP access, signals, payments and member responsibilities.
+    </PolicyHero>
+    <section className="section legalContent">
+      <div className="legalCard"><h3>Service Access</h3><p>VIP access is provided after payment proof is submitted and approved by admin. Access may include VIP dashboard, Telegram updates, analysis, reports and trade posts.</p></div>
+      <div className="legalCard"><h3>No Guaranteed Results</h3><p>Trading results are not guaranteed. Past performance, proof posts, reports or testimonials do not guarantee future results.</p></div>
+      <div className="legalCard"><h3>Payment Approval</h3><p>Payment proof must be clear and valid. Admin may reject unclear, duplicate, fraudulent or incorrect payment submissions.</p></div>
+      <div className="legalCard"><h3>VIP Account Use</h3><p>VIP access is for the approved member only. Sharing login details, private signals, VIP Telegram content or paid material outside the service is not allowed.</p></div>
+      <div className="legalCard"><h3>Refund Policy</h3><p>Because signals, analysis and digital VIP access are delivered immediately after approval, payments are generally non-refundable unless admin decides otherwise in a specific case.</p></div>
+      <div className="legalCard"><h3>Service Changes</h3><p>1000PIPSFX may update pricing, features, Telegram access, reports, signal format, analysis sections or platform design to improve the service.</p></div>
+    </section>
+  </>
+}
+
+function PrivacyPolicyPage({setPage}){
+  return <>
+    <PolicyHero label="1000PIPSFX LEGAL" title="Privacy Policy" setPage={setPage}>
+      This page explains what information 1000PIPSFX collects and how it is used for account access, payments, support and service operation.
+    </PolicyHero>
+    <section className="section legalContent">
+      <div className="legalCard"><h3>Information We Collect</h3><p>We may collect name, email address, account status, VIP plan, payment proof screenshots, testimonial submissions, referral data and messages submitted through the platform.</p></div>
+      <div className="legalCard"><h3>How We Use Information</h3><p>Information is used to create accounts, review payments, approve VIP access, send service emails, manage member access, provide support and improve the platform.</p></div>
+      <div className="legalCard"><h3>Payment Proofs</h3><p>Payment screenshots are used only to verify member payments and approve VIP access. Users should avoid uploading unnecessary sensitive information.</p></div>
+      <div className="legalCard"><h3>Testimonials</h3><p>Testimonials submitted by members may be reviewed by admin and displayed publicly only after approval.</p></div>
+      <div className="legalCard"><h3>Data Protection</h3><p>We aim to protect member information and only use it for service-related purposes. No online system can be guaranteed 100% secure.</p></div>
+      <div className="legalCard"><h3>Contact</h3><p>For privacy or support questions, contact 1000PIPSFX through the official support channels listed on the website.</p></div>
+    </section>
+  </>
+}
+
 function FloatingContactButtons(){
   return <div className="floatingContacts">
     <a className="whatsappFloat" href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer">WhatsApp</a>
@@ -1403,13 +1465,19 @@ function FloatingContactButtons(){
   </div>
 }
 
-function Footer(){ return <footer>
+function Footer({setPage}){ return <footer>
   <h2>1000PIPS</h2>
   <p>Professional Forex Signals & Market Analysis</p>
   <div className="footerSocialLinks">
     <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer">Instagram</a>
     <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer">Facebook</a><a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer">Trustpilot</a>
   </div>
+  <div className="footerLegalLinks">
+    <button onClick={()=>setPage('risk')}>Risk Warning</button>
+    <button onClick={()=>setPage('terms')}>Terms & Conditions</button>
+    <button onClick={()=>setPage('privacy')}>Privacy Policy</button>
+  </div>
+  <small className="footerRiskNote">Trading involves risk. 1000PIPSFX does not guarantee profit.</small>
 </footer> }
 
 

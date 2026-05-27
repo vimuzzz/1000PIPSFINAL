@@ -1388,3 +1388,24 @@ footer h2{color:#00ff88}
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* Legal / Policy pages */
+.legalPage{padding-bottom:20px!important}
+.legalHero{
+  background:radial-gradient(circle at 20% 20%,rgba(0,255,136,.14),transparent 35%),linear-gradient(135deg,#07100b,#080808);
+  border:1px solid rgba(0,255,136,.24);
+  border-radius:30px;
+  padding:44px;
+}
+.legalHero h2{font-size:clamp(34px,6vw,64px);line-height:1;margin:12px 0 18px}
+.legalHero p{color:#d7d7d7;line-height:1.75;max-width:850px;font-size:18px}
+.legalHero button{margin-top:22px;background:#00ff88!important;color:#000!important;border:none!important;border-radius:999px!important;padding:13px 20px!important;font-weight:900!important}
+.legalContent{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;padding-top:22px!important}
+.legalCard{background:#0b0b0b;border:1px solid rgba(0,255,136,.2);border-radius:22px;padding:24px;color:#fff}
+.legalCard h3{color:#00ff88;margin-bottom:12px}.legalCard p{color:#d0d0d0;line-height:1.7}
+.footerLegalLinks{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.footerLegalLinks button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#d0d0d0;border-radius:999px;padding:9px 13px;font-weight:800}
+.footerLegalLinks button:hover{border-color:#00ff88;color:#00ff88}
+.footerRiskNote{display:block;margin-top:14px;color:#8b8b8b;line-height:1.5}
+@media(max-width:850px){.legalContent{grid-template-columns:1fr}.legalHero{padding:30px 22px}}
