@@ -10,6 +10,7 @@ const BINANCE_PAY_ID='41356322'
 const TELEGRAM_FREE='https://t.me/ForexHubbSignals'
 const WHATSAPP_CONTACT='https://wa.me/94781170977'
 const TELEGRAM_CONTACT='https://t.me/pips1000x'
+const TRUSTPILOT_LINK='https://www.trustpilot.com/review/1000pipsfx.com'
 const INSTAGRAM_LINK='https://www.instagram.com/1000pips?igsh=MTE3Nm85bHlubWFheg=='
 const FACEBOOK_LINK='https://www.facebook.com/share/1Crxa8YCs8/'
 
@@ -595,6 +596,24 @@ function Home({setPage}){
           <h3>🖼️ Chart-Based Analysis</h3>
           <p>Market analysis can include chart screenshots, key levels and trade plans, posted to website and Telegram.</p>
         </div>
+      </div>
+    </section>
+
+
+    <section className="section trustpilotSection">
+      <div className="trustpilotInner">
+        <div>
+          <p className="green">VERIFIED REVIEW PROFILE</p>
+          <h2>1000PIPSFX Is On Trustpilot</h2>
+          <p>
+            We believe in transparency and real customer feedback. Visit our Trustpilot profile to read and share honest reviews about 1000PIPSFX.
+          </p>
+        </div>
+        <a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer" className="trustpilotCard">
+          <span>Trustpilot</span>
+          <strong>Review 1000PIPSFX</strong>
+          <small>Open our public Trustpilot profile</small>
+        </a>
       </div>
     </section>
 
@@ -1356,7 +1375,7 @@ function Footer(){ return <footer>
   <p>Professional Forex Signals & Market Analysis</p>
   <div className="footerSocialLinks">
     <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer">Instagram</a>
-    <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer">Facebook</a>
+    <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer">Facebook</a><a href={TRUSTPILOT_LINK} target="_blank" rel="noreferrer">Trustpilot</a>
   </div>
 </footer> }
 
