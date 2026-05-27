@@ -1368,3 +1368,23 @@ footer h2{color:#00ff88}
   .proofSlideCard{flex:0 0 86vw;max-width:86vw}
   .proofSliderHelp{font-size:12px}
 }
+
+
+/* Exact pips + R:R trade update controls */
+.tradeResultInputs{
+  display:grid!important;
+  grid-template-columns:minmax(160px,220px) minmax(160px,220px)!important;
+  align-items:center;
+  margin:14px 0 10px;
+}
+.tradeResultInputs input{
+  max-width:none!important;
+}
+.tradeUpdateBtns button{
+  margin-bottom:6px;
+}
+@media(max-width:700px){
+  .tradeResultInputs{
+    grid-template-columns:1fr!important;
+  }
+}
