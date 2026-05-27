@@ -644,27 +644,16 @@ function Home({setPage}){
     </section>
 
     
-    <section className="section contactSalesSection">
-      <div className="contactSalesInner">
+    <section className="section supportStripSection">
+      <div className="supportStripInner">
         <div>
           <p className="green">NEED HELP BEFORE JOINING?</p>
-          <h2>Contact 1000PIPS Directly</h2>
-          <p>
-            Have questions about VIP plans, payment proof, Telegram access or signals? 
-            Message 1000PIPS directly on WhatsApp or Telegram before joining.
-          </p>
+          <h2>Contact 1000PIPS Support</h2>
+          <p>Questions about VIP plans, payment proof or Telegram access? Message us before joining.</p>
         </div>
-        <div className="contactCards">
-          <a href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer" className="contactCard whatsappCard">
-            <span>WhatsApp</span>
-            <strong>+94 78 117 0977</strong>
-            <small>Fast support for VIP joining</small>
-          </a>
-          <a href={TELEGRAM_CONTACT} target="_blank" rel="noreferrer" className="contactCard telegramCard">
-            <span>Telegram</span>
-            <strong>@pips1000x</strong>
-            <small>Message directly on Telegram</small>
-          </a>
+        <div className="supportStripActions">
+          <a href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer" className="supportBtn whatsappSupport">WhatsApp</a>
+          <a href={TELEGRAM_CONTACT} target="_blank" rel="noreferrer" className="supportBtn telegramSupport">Telegram</a>
         </div>
       </div>
     </section>
