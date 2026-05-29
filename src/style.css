@@ -1409,3 +1409,9 @@ footer h2{color:#00ff88}
 .footerLegalLinks button:hover{border-color:#00ff88;color:#00ff88}
 .footerRiskNote{display:block;margin-top:14px;color:#8b8b8b;line-height:1.5}
 @media(max-width:850px){.legalContent{grid-template-columns:1fr}.legalHero{padding:30px 22px}}
+
+
+/* Risk percent / account growth upgrade */
+.tradeResultInputs input{max-width:220px}
+.premiumPips strong{display:block}
+.weeklyPosterStatGrid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
