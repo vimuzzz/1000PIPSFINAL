@@ -1421,3 +1421,15 @@ footer h2{color:#00ff88}
 .publicArchivePage .centerText{margin-bottom:22px}
 .archiveTopActions{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;margin:18px 0 28px}
 .archiveTopActions .outlineBtn{background:transparent!important;color:#00ff88!important;border:1px solid #00ff88!important;border-radius:999px!important;padding:14px 22px!important;font-weight:900!important}
+
+
+/* Cancel pending order controls */
+.cancelOrderBtn{
+  background:#ffb347!important;
+  color:#170900!important;
+}
+.signalStatus.order-cancelled{
+  background:#2b1600!important;
+  color:#ffb347!important;
+  border-color:rgba(255,179,71,.5)!important;
+}
