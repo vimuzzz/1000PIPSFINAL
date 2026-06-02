@@ -992,22 +992,22 @@ function ReferralCenter({user,setPage}){
 
 function Archive({user,setPage}){
   const[reports,setReports]=useState([]),[msg,setMsg]=useState('')
-  useEffect(()=>{ load() },[user])
-  async function load(){ if(!user) return; try{ setReports(await api('/api/vip/reports')) }catch(e){ setMsg(e.message) } }
-  if(!user) return <section className="section narrow"><h2>Please login first</h2><button onClick={()=>setPage('login')}>Login</button></section>
-  if(!user.vip&&user.role!=='admin') return <section className="section narrow"><p className="green">VIP LOCKED</p><h2>Performance Archive is members-only</h2></section>
-  return <section className="section">
-    <p className="green">PERFORMANCE ARCHIVE</p>
-    <h2>Past Weekly & Monthly Reports</h2>
-    <button className="refresh" onClick={load}>Refresh Archive</button>
+  useEffect(()=>{ load() },[])
+  async function load(){
+    try{ setReports(await api('/api/reports/public')) }catch(e){ setMsg(e.message) }
+  }
+  return <section className="section publicArchivePage">
+    <p className="green">PUBLIC PERFORMANCE ARCHIVE</p>
+    <h2>Past Weekly & Monthly Trading Reports</h2>
+    <p className="centerText">Review 1000PIPS archived trading reports before joining VIP. Live signals and full VIP dashboard access remain members-only.</p>
+    <div className="archiveTopActions"><button className="refresh" onClick={load}>Refresh Archive</button><button className="outlineBtn" onClick={()=>setPage(user?'dashboard':'plans')}>{user?'Open Dashboard':'Join VIP'}</button></div>
     {msg&&<p className="error">{msg}</p>}
     <div className="archivePosterGrid">
       {reports.length===0&&<p>No archived reports yet.</p>}
-      {reports.map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>)}
+      {reports.map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>) }
     </div>
   </section>
 }
-
 
 function ProofGallery({limit=6}){
   const [proofs,setProofs]=useState([])
