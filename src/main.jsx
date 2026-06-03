@@ -13,6 +13,7 @@ const TELEGRAM_CONTACT='https://t.me/pips1000x'
 const TRUSTPILOT_LINK='https://www.trustpilot.com/review/1000pipsfx.com'
 const INSTAGRAM_LINK='https://www.instagram.com/1000pips?igsh=MTE3Nm85bHlubWFheg=='
 const FACEBOOK_LINK='https://www.facebook.com/share/1Crxa8YCs8/'
+const IC_MARKETS_LINK='https://icmarkets.com/?camp=22138'
 
 function getToken(){ return localStorage.getItem('token') }
 async function api(path, options={}){
@@ -477,6 +478,7 @@ function Home({setPage}){
             <a href={TELEGRAM_FREE} target="_blank">Free Telegram Channel</a>
           </div>
           <div className="heroTrust">
+            <span>✅ 8 Years Trading Experience</span>
             <span>✅ VIP Dashboard</span>
             <span>✅ Telegram Signals</span>
             <span>✅ Chart Analysis</span>
@@ -613,6 +615,30 @@ function Home({setPage}){
       </div>
     </section>
 
+
+
+    <section className="section brokerPartnerSection">
+      <div className="brokerPartnerInner">
+        <div className="brokerPartnerText">
+          <p className="green">BROKER PARTNER</p>
+          <h2>Reliable Broker We Use: IC Markets</h2>
+          <p>
+            1000PIPSFX focuses on disciplined trading, risk management and transparent reporting. For traders who ask about broker choice, our recommended broker partner is IC Markets.
+          </p>
+          <p className="brokerDisclosure">
+            Disclosure: This broker link may be an affiliate link. Trading involves risk. Always choose a broker based on your own research, regulation needs and country availability.
+          </p>
+        </div>
+        <a href={IC_MARKETS_LINK} target="_blank" rel="noreferrer" className="icMarketsCard">
+          <div className="icLogoMark">IC</div>
+          <div>
+            <span>Reliable Broker Partner</span>
+            <strong>IC Markets</strong>
+            <small>Open IC Markets with 1000PIPS partner link</small>
+          </div>
+        </a>
+      </div>
+    </section>
 
     <section className="section trustpilotSection">
       <div className="trustpilotInner">
@@ -1487,6 +1513,7 @@ function Footer({setPage}){ return <footer>
     <button onClick={()=>setPage('risk')}>Risk Warning</button>
     <button onClick={()=>setPage('terms')}>Terms & Conditions</button>
     <button onClick={()=>setPage('privacy')}>Privacy Policy</button>
+    <a href={IC_MARKETS_LINK} target="_blank" rel="noreferrer">IC Markets</a>
   </div>
   <small className="footerRiskNote">Trading involves risk. 1000PIPSFX does not guarantee profit.</small>
 </footer> }
