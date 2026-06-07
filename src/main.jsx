@@ -125,8 +125,9 @@ function tradeFilterMatch(trade, filter){
 }
 function filterCount(trades, key){ return trades.filter(t=>tradeFilterMatch(t,key)).length }
 function tradeStatusFromPips(pips){ const n=Number(pips); if(n>0) return 'tp2'; if(n<0) return 'sl'; return 'breakeven' }
-function formatPercent(value){ const n=Number(value||0); if(!Number.isFinite(n)||n===0) return '0%'; return `${n>0?'+':''}${n}%` }
-function optionalPercent(value){ const n=Number(value||0); if(!Number.isFinite(n)||n===0) return ''; return `${n>0?'+':''}${n}%` }
+function round2(value){ const n=Number(value||0); if(!Number.isFinite(n)) return 0; return Math.round((n + Number.EPSILON) * 100) / 100 }
+function formatPercent(value){ const n=round2(value); if(n===0) return '0%'; return `${n>0?'+':''}${n.toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1')}%` }
+function optionalPercent(value){ const n=round2(value); if(n===0) return ''; return `${n>0?'+':''}${n.toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1')}%` }
 function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(user.daysRemaining)) return <div className="warningBadge">VIP expires in {user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'} · Renew soon</div>; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
@@ -200,7 +201,7 @@ function buildWeeklyReportText(report,trades=[]){
     '1000PIPS PERFORMANCE REPORT',
     `Weekly Pips: ${stats.weeklyPips ?? 0}`,
     `Weekly Account Growth: ${formatPercent(stats.weeklyGainPercent)}`,
-    `Total Risk Taken: ${Number(stats.weeklyRiskPercent || 0)}%`,
+    `Total Risk Taken: ${formatPercent(stats.weeklyRiskPercent)}`,
     `Win Rate: ${stats.winRate ?? 0}%`,
     `Wins: ${stats.wins ?? 0}`,
     `Losses: ${stats.losses ?? 0}`,
@@ -226,36 +227,13 @@ async function copyTextToClipboard(text){
   document.execCommand('copy')
   document.body.removeChild(area)
 }
-
-function buildPosterSummary(report,trades=[], maxTrades=3){
-  const stats=report?.stats||{}
-  const highlights=pickWeeklyHighlightTrades(trades,maxTrades)
-  const lines=[
-    `Weekly Pips: ${stats.weeklyPips ?? report?.totalPips ?? 0}`,
-    `Account Growth: ${formatPercent(stats.weeklyGainPercent ?? report?.weeklyGainPercent ?? 0)}`,
-    `Risk Taken: ${Number(stats.weeklyRiskPercent ?? report?.weeklyRiskPercent ?? 0)}%`,
-    `Win Rate: ${stats.winRate ?? report?.winRate ?? 0}%`,
-    `Wins/Losses: ${stats.wins ?? report?.wins ?? 0} / ${stats.losses ?? report?.losses ?? 0}`
-  ]
-  if(highlights.length){
-    lines.push('Top Trades:')
-    highlights.forEach(t=>{
-      const p=Number(t.resultPips||0)
-      const pct=optionalPercent(t.resultPercent)
-      lines.push(`${t.pair} ${String(t.direction||'').toUpperCase()} ${p>0?'+':''}${p} pips${pct?` (${pct})`:''}`)
-    })
-  }
-  lines.push('Risk management first. Trade with discipline.')
-  return lines.join('\n')
-}
-
 function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   if(!report) return
   const stats=report.stats||{}
   const presets={
-    square:{width:1080,height:1080,label:'instagram-square',highlights:3,summaryLines:5,titleSize:54,statFont:40,topTrades:3},
-    portrait:{width:1080,height:1350,label:'telegram-portrait',highlights:3,summaryLines:7,titleSize:58,statFont:42,topTrades:3},
-    status:{width:1080,height:1920,label:'whatsapp-status',highlights:4,summaryLines:9,titleSize:60,statFont:42,topTrades:4}
+    square:{width:1080,height:1080,label:'instagram-square',highlights:3,summaryLines:7},
+    portrait:{width:1080,height:1350,label:'telegram-portrait',highlights:4,summaryLines:10},
+    status:{width:1080,height:1920,label:'whatsapp-status',highlights:5,summaryLines:14}
   }
   const preset=presets[format] || presets.portrait
   const highlights=pickWeeklyHighlightTrades(trades,preset.highlights)
@@ -268,7 +246,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   const contentWidth=W-(margin*2)
   const gap=Math.round(W*0.018)
   const cardW=Math.floor((contentWidth-gap)/2)
-  const cardH=format==='status'?128:110
+  const cardH=format==='status'?130:118
   const gradient=ctx.createLinearGradient(0,0,W,H)
   gradient.addColorStop(0,'#050816')
   gradient.addColorStop(0.55,'#0b1223')
@@ -277,30 +255,32 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   ctx.fillRect(0,0,W,H)
   ctx.fillStyle='rgba(0,255,163,0.08)'
   ctx.beginPath(); ctx.arc(W-120,170,160,0,Math.PI*2); ctx.fill()
-  ctx.fillStyle='rgba(255,215,0,0.05)'
+  ctx.fillStyle='rgba(255,215,0,0.06)'
   ctx.beginPath(); ctx.arc(130,H-170,150,0,Math.PI*2); ctx.fill()
 
-  let y=78
+  let y=86
   ctx.fillStyle='#00f59b'
   ctx.font='700 34px Arial'
   ctx.fillText('1000PIPS',margin,y)
   y+=38
   ctx.fillStyle='#ffffff'
-  ctx.font=`700 ${preset.titleSize}px Arial`
-  ctx.fillText('WEEKLY PERFORMANCE',margin,y+34)
-  y+=70
+  ctx.font=format==='square'?'700 56px Arial':'700 62px Arial'
+  ctx.fillText('WEEKLY PERFORMANCE',margin,y+36)
+  y+=72
   ctx.fillStyle='#aab3c5'
   ctx.font='28px Arial'
   ctx.fillText(new Date(report.createdAt||Date.now()).toLocaleDateString(),margin,y)
-  y+=46
+  y+=42
 
   const statItems=[
-    ['Weekly Pips', String(stats.weeklyPips ?? report.totalPips ?? 0)],
-    ['Weekly Growth', formatPercent(stats.weeklyGainPercent ?? report.weeklyGainPercent ?? 0)],
-    ['Risk Taken', `${Number(stats.weeklyRiskPercent ?? report.weeklyRiskPercent ?? 0)}%`],
-    ['Win Rate', `${stats.winRate ?? report.winRate ?? 0}%`],
-    ['Wins', String(stats.wins ?? report.wins ?? 0)],
-    ['Losses', String(stats.losses ?? report.losses ?? 0)]
+    ['Weekly Pips', String(stats.weeklyPips ?? 0)],
+    ['Weekly Growth', formatPercent(stats.weeklyGainPercent)],
+    ['Risk Taken', formatPercent(stats.weeklyRiskPercent)],
+    ['Win Rate', `${stats.winRate ?? 0}%`],
+    ['Wins', String(stats.wins ?? 0)],
+    ['Losses', String(stats.losses ?? 0)],
+    ['Total Pips', String(stats.totalPips ?? 0)],
+    ['Weekly Open', String(stats.weeklyOpenTrades ?? stats.activeTrades ?? 0)]
   ]
   statItems.forEach((item,i)=>{
     const x=margin + (i%2)*(cardW+gap)
@@ -311,13 +291,12 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
     ctx.font='24px Arial'
     ctx.fillText(item[0],x+22,cy+36)
     ctx.fillStyle='#ffffff'
-    ctx.font=`700 ${preset.statFont}px Arial`
+    ctx.font='700 42px Arial'
     ctx.fillText(item[1],x+22,cy+82)
   })
-  const statRows=Math.ceil(statItems.length/2)
-  y += (cardH*statRows) + (gap*(statRows-1)) + 30
+  y += (cardH*3) + (gap*2) + 26
 
-  const updateBoxH = format==='status' ? 300 : format==='portrait' ? 240 : 190
+  const updateBoxH = format==='status' ? 290 : format==='portrait' ? 240 : 210
   ctx.fillStyle='rgba(255,255,255,0.06)'
   drawCanvasRoundRect(ctx,margin,y,contentWidth,updateBoxH,24,true)
   ctx.fillStyle='#ffd54f'
@@ -328,48 +307,42 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
     ctx.font='26px Arial'
     ctx.fillText('No closed trades yet.',margin+28,y+92)
   }else{
-    highlights.slice(0,preset.topTrades).forEach((t,idx)=>{
-      const lineY=y+88+(idx*44)
+    highlights.forEach((t,idx)=>{
+      const lineY=y+88+(idx*42)
       const p=Number(t.resultPips||0)
-      const pct=optionalPercent(t.resultPercent)
       ctx.fillStyle='#ffffff'
       ctx.font='700 24px Arial'
-      const pairText=`${t.pair} ${String(t.direction||'').toUpperCase()}`.slice(0,28)
-      ctx.fillText(pairText,margin+28,lineY)
+      ctx.fillText(`${t.pair} ${t.direction}`,margin+28,lineY)
       ctx.fillStyle='#aab3c5'
       ctx.font='22px Arial'
-      ctx.fillText(signalStatusLabel(t.status,t.resultPips),margin+355,lineY)
+      ctx.fillText(signalStatusLabel(t.status,t.resultPips),margin+340,lineY)
       ctx.fillStyle=p>0?'#00f59b':p<0?'#ff6a6a':'#ffd54f'
       ctx.font='700 22px Arial'
       ctx.textAlign='right'
-      ctx.fillText(`${p>0?'+':''}${p} pips${pct?` ${pct}`:''}`,W-margin-30,lineY)
+      ctx.fillText(`${p>0?'+':''}${p} pips`,W-margin-30,lineY)
       ctx.textAlign='left'
     })
   }
-  y += updateBoxH + 24
+  y += updateBoxH + 22
 
-  const footerH=62
-  const bottomPad=28
-  const summaryBoxH=Math.max(170, H - y - footerH - bottomPad - 24)
+  const summaryBoxH = H - y - 110
   ctx.fillStyle='rgba(255,255,255,0.06)'
   drawCanvasRoundRect(ctx,margin,y,contentWidth,summaryBoxH,24,true)
   ctx.fillStyle='#7efcc6'
   ctx.font='700 30px Arial'
   ctx.fillText('Weekly Summary',margin+28,y+42)
   ctx.fillStyle='#dfe7f5'
-  ctx.font=format==='square'?'23px Arial':'25px Arial'
-  const summaryText=buildPosterSummary(report,trades,preset.topTrades)
-  wrapCanvasText(ctx, summaryText, margin+28, y+88, contentWidth-56, format==='square'?30:32, preset.summaryLines)
+  ctx.font='25px Arial'
+  wrapCanvasText(ctx, buildWeeklyReportText(report,trades), margin+28, y+92, contentWidth-56, 34, preset.summaryLines)
 
-  const footerY=H-footerH-bottomPad
-  ctx.fillStyle='rgba(0,0,0,0.28)'
-  drawCanvasRoundRect(ctx,margin,footerY,contentWidth,footerH,18,true)
+  ctx.fillStyle='rgba(0,0,0,0.24)'
+  drawCanvasRoundRect(ctx,margin,H-84,contentWidth,56,18,true)
   ctx.fillStyle='#e9eef8'
   ctx.font='22px Arial'
-  ctx.fillText('1000PIPS • Premium Weekly Performance',margin+22,footerY+39)
+  ctx.fillText('1000PIPS • Premium Weekly Performance',margin+22,H-48)
   ctx.textAlign='right'
   ctx.fillStyle='#8ea0bd'
-  ctx.fillText('Risk management first',W-margin-20,footerY+39)
+  ctx.fillText('Trade with proper risk management',W-margin-20,H-48)
   ctx.textAlign='left'
 
   const link=document.createElement('a')
@@ -378,7 +351,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   link.click()
 }
 function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
-  const stats=report?.stats || {weeklyPips:report?.totalPips||0, weeklyGainPercent:report?.weeklyGainPercent||report?.totalGainPercent||0, totalGainPercent:report?.totalGainPercent||0, weeklyRiskPercent:report?.weeklyRiskPercent||0, winRate:report?.winRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.activeTrades||0}
+  const stats=report?.stats || {weeklyPips:report?.totalPips||0, weeklyGainPercent:report?.weeklyGainPercent||report?.totalGainPercent||0, totalGainPercent:report?.totalGainPercent||0, weeklyRiskPercent:report?.weeklyRiskPercent||0, winRate:report?.winRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.activeTrades||0, weeklyOpenTrades:report?.weeklyOpenTrades||report?.activeTrades||0, weeklyClosedTrades:report?.weeklyClosedTrades||report?.closedTrades||0, totalOpenTrades:report?.totalOpenTrades||report?.activeTrades||0}
   const normalizedReport={...report,stats}
   const highlights=pickWeeklyHighlightTrades(trades, compact?3:5)
   const title=report?.title || (report?.period?`${report.period} Performance Report`:'Weekly Performance Report')
@@ -395,12 +368,12 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
     <div className="weeklyPosterStatGrid">
       <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
       <div><span>Weekly Growth</span><strong>{formatPercent(stats.weeklyGainPercent)}</strong></div>
-      <div><span>Risk Taken</span><strong>{Number(stats.weeklyRiskPercent || 0)}%</strong></div>
+      <div><span>Risk Taken</span><strong>{formatPercent(stats.weeklyRiskPercent)}</strong></div>
       <div><span>Win Rate</span><strong>{stats.winRate ?? 0}%</strong></div>
       <div><span>Wins</span><strong>{stats.wins ?? 0}</strong></div>
       <div><span>Losses</span><strong>{stats.losses ?? 0}</strong></div>
       <div><span>Total Pips</span><strong>{stats.totalPips ?? 0}</strong></div>
-      <div><span>Active Trades</span><strong>{stats.activeTrades ?? 0}</strong></div>
+      <div><span>Weekly Open</span><strong>{stats.weeklyOpenTrades ?? stats.activeTrades ?? 0}</strong></div>
     </div>
     {!!highlights.length && !compact && <div className="weeklyPosterHighlights">
       <h4>Top Trade Updates</h4>
@@ -936,7 +909,21 @@ function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months
         {couponResult&&<div className="couponResultBox">
           <strong>{couponResult.code}</strong> applied — Original: ${couponResult.originalPrice} | Discount: ${couponResult.discount} | Final: ${couponResult.finalPrice}
         </div>}<label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
-function StatsCards({stats}){ return <div className="statsGrid"><div><h3>{stats.activeTrades}</h3><p>Active Trades</p></div><div><h3>{stats.winRate}%</h3><p>Win Rate</p></div><div><h3>{stats.totalPips}</h3><p>Total Pips</p></div><div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div><div><h3>{formatPercent(stats.weeklyGainPercent)}</h3><p>Weekly Growth</p></div><div><h3>{formatPercent(stats.totalGainPercent)}</h3><p>Total Growth</p></div><div><h3>{Number(stats.weeklyRiskPercent||0)}%</h3><p>Weekly Risk</p></div><div><h3>{stats.wins}</h3><p>Wins</p></div><div><h3>{stats.losses}</h3><p>Losses</p></div></div> }
+function StatsCards({stats}){
+  return <div className="statsGrid statsGridDetailed">
+    <div><h3>{stats.weeklyPips ?? 0}</h3><p>Weekly Pips</p></div>
+    <div><h3>{formatPercent(stats.weeklyGainPercent)}</h3><p>Weekly Growth</p></div>
+    <div><h3>{formatPercent(stats.weeklyRiskPercent)}</h3><p>Weekly Risk Taken</p></div>
+    <div><h3>{stats.weeklyWinRate ?? 0}%</h3><p>Weekly Accuracy</p></div>
+    <div><h3>{stats.weeklyOpenTrades ?? stats.activeTrades ?? 0}</h3><p>This Week Open</p></div>
+    <div><h3>{stats.weeklyClosedTrades ?? stats.weeklyTrades ?? 0}</h3><p>This Week Closed</p></div>
+    <div><h3>{stats.totalPips ?? 0}</h3><p>Overall Pips</p></div>
+    <div><h3>{formatPercent(stats.totalGainPercent)}</h3><p>Overall Growth</p></div>
+    <div><h3>{stats.winRate ?? 0}%</h3><p>Overall Accuracy</p></div>
+    <div><h3>{stats.totalOpenTrades ?? stats.activeTrades ?? 0}</h3><p>Overall Open</p></div>
+    <div><h3>{stats.closedTrades ?? 0}</h3><p>Overall Closed</p></div>
+  </div>
+}
 function TradeCard({trade}){
   const statusLabel=signalStatusLabel(trade.status, trade.resultPips)
   const statusClass=signalStatusClass(trade.status, trade.resultPips)
@@ -1400,7 +1387,7 @@ ${t.notes}`,sendTelegram:true})
       </div>
 
       <div className="adminBox full"><h3>Published Analysis Posts</h3><AdminFilterBar search={adminAnalysisSearch} setSearch={setAdminAnalysisSearch} filter={adminAnalysisFilter} setFilter={setAdminAnalysisFilter} placeholder="Search title, market, bias..." total={analysis.length} shown={filteredAdminAnalysis.length} filters={[['all','All Posts'],['public','Public'],['vip','VIP']]}/>{filteredAdminAnalysis.length===0&&<p>No analysis posts found.</p>}<AdminShowToggle itemsKey="analysis" total={filteredAdminAnalysis.length}/>{adminItems(filteredAdminAnalysis,'analysis').map(post=>{ const latest=Array.isArray(post.updates)&&post.updates.length?post.updates[0]:null; return <div key={post._id} className="adminRow"><strong>{post.title}</strong><p>{post.market} · {post.bias} · {post.visibility}</p>{latest&&<div className={`analysisLatestUpdate adminMini ${latest.status}`}><strong>{analysisUpdateStatusIcon(latest.status)} {analysisUpdateStatusLabel(latest.status)}</strong><p>{latest.comment}</p><small>{formatDateTime(latest.createdAt)}</small></div>}{post.chartImageData&&<img className="miniChart" src={imgSrcFromPost(post)} alt={post.title}/>}<div className="rowBtns"><button onClick={()=>setActiveAnalysisUpdate(activeAnalysisUpdate===post._id?null:post._id)}>Add Update</button><button onClick={()=>deleteAnalysis(post._id)}>Delete</button></div>{activeAnalysisUpdate===post._id&&<form onSubmit={e=>postAnalysisUpdate(e,post._id)} className="form compact analysisUpdateForm"><select value={analysisUpdateForm.status} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,status:e.target.value})}><option value="running">Running According To Analysis</option><option value="target_hit">Target Hit</option><option value="invalidated">Invalidated By News / Market Change</option><option value="failed">Analysis Failed</option><option value="updated">General Update</option></select><textarea rows="4" placeholder="Write update comment for members" value={analysisUpdateForm.comment} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,comment:e.target.value})}/><select value={analysisUpdateForm.visibility} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,visibility:e.target.value})}><option value="public">Public Update</option><option value="vip">VIP Only Update</option></select><label className="check"><input type="checkbox" checked={analysisUpdateForm.sendTelegram} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,sendTelegram:e.target.checked})}/> Send update to Telegram</label><div className="rowBtns"><button>Add Analysis Update</button><button type="button" onClick={()=>setActiveAnalysisUpdate(null)}>Cancel</button></div></form>}{Array.isArray(post.updates)&&post.updates.length>0&&<div className="analysisUpdateTimeline adminTimeline"><h4>Update History</h4>{post.updates.map((u,i)=><div className={`analysisUpdateItem ${u.status}`} key={u._id||i}><span>{analysisUpdateStatusIcon(u.status)}</span><div><strong>{analysisUpdateStatusLabel(u.status)}</strong><p>{u.comment}</p><small>{formatDateTime(u.createdAt)} · {u.visibility}</small></div></div>)}</div>}</div>})}</div>
-      <div id="admin-reports" className="adminBox full"><h3>Archived Reports</h3><AdminFilterBar search={adminReportSearch} setSearch={setAdminReportSearch} filter={adminReportFilter} setFilter={setAdminReportFilter} placeholder="Search report title, period, text..." total={reports.length} shown={filteredAdminReports.length} filters={[['all','All Reports'],['weekly','Weekly'],['monthly','Monthly']]}/>{filteredAdminReports.length===0&&<p>No archived reports found.</p>}<AdminShowToggle itemsKey="reports" total={filteredAdminReports.length}/>{adminItems(filteredAdminReports,'reports').map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p><p>Created: {formatDateTime(r.createdAt)}</p><div className="rowBtns"><button className="dangerDeleteBtn" onClick={()=>deleteArchiveReport(r._id)}>Delete Report</button></div></div>)}</div>
+      <div id="admin-reports" className="adminBox full"><h3>Archived Reports</h3><AdminFilterBar search={adminReportSearch} setSearch={setAdminReportSearch} filter={adminReportFilter} setFilter={setAdminReportFilter} placeholder="Search report title, period, text..." total={reports.length} shown={filteredAdminReports.length} filters={[['all','All Reports'],['weekly','Weekly'],['monthly','Monthly']]}/>{filteredAdminReports.length===0&&<p>No archived reports found.</p>}<AdminShowToggle itemsKey="reports" total={filteredAdminReports.length}/>{adminItems(filteredAdminReports,'reports').map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}% | Growth: {formatPercent(r.weeklyGainPercent||r.totalGainPercent)}</p><p>Created: {formatDateTime(r.createdAt)}</p><div className="rowBtns"><button className="dangerDeleteBtn" onClick={()=>deleteArchiveReport(r._id)}>Delete Report</button></div></div>)}</div>
     </div>
   </section>
 }

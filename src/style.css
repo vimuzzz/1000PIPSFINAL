@@ -1529,3 +1529,16 @@ footer h2{color:#00ff88}
   .icMarketsCard{grid-template-columns:1fr;text-align:center;justify-items:center}
   .icLogoMark{width:76px;height:76px;font-size:30px}
 }
+
+
+/* Weekly vs overall stats fix */
+.statsGridDetailed{
+  grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+}
+.statsGridDetailed div{
+  min-height:118px;
+}
+.statsGridDetailed h3{
+  font-size:clamp(26px,3vw,38px);
+  word-break:break-word;
+}
