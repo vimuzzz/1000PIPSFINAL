@@ -28,6 +28,7 @@ async function api(path, options={}){
 }
 
 function getPlanPrice(plan){
+  if(String(plan).toLowerCase().includes('trade manager') || String(plan).toLowerCase().includes('ea')) return 15
   if(String(plan).includes('$400')) return 400
   if(String(plan).includes('$100')) return 100
   if(String(plan).includes('$45')) return 45
@@ -432,6 +433,7 @@ function AnnouncementsPanel({mode='public', user=null}){
 
 function App(){
   const [page,setPage]=useState('home')
+  const [paymentPlan,setPaymentPlan]=useState('')
   const [user,setUser]=useState(null)
   useEffect(()=>{ const u=localStorage.getItem('user'); if(u){ try{ setUser(JSON.parse(u)); refreshMe() }catch{ localStorage.removeItem('user'); localStorage.removeItem('token') } } },[])
   async function refreshMe(){ if(!getToken()) return; try{ const fresh=await api('/api/me'); localStorage.setItem('user', JSON.stringify(fresh)); setUser(fresh) }catch{} }
@@ -448,6 +450,7 @@ function App(){
         <button onClick={()=>setPage('dashboard')}>Dashboard</button>
         <button onClick={()=>setPage('vip')}>VIP Area</button>
         <button onClick={()=>setPage('rules')}>Signal Rules</button>
+        <button onClick={()=>setPage('mt5ea')}>MT5 EA</button>
         <button onClick={()=>setPage('referrals')}>Referrals</button>
         {user?.role==='admin' && <button onClick={()=>setPage('admin')}>Admin</button>}
         {user ? <button onClick={logout}>Logout</button> : <button onClick={()=>setPage('login')}>Login</button>}
@@ -457,10 +460,11 @@ function App(){
     {page==='home' && <Home setPage={setPage}/>} 
     {page==='plans' && <Plans setPage={setPage}/>} 
     {page==='login' && <Login saveSession={saveSession} setPage={setPage}/>} 
-    {page==='payment' && <Payment user={user} setUser={setUser} setPage={setPage}/>} 
+    {page==='payment' && <Payment user={user} setUser={setUser} setPage={setPage} initialPlan={paymentPlan}/>} 
     {page==='dashboard' && <SignalDashboard user={user} setPage={setPage}/>} 
     {page==='vip' && <Vip user={user} setPage={setPage}/>} 
     {page==='rules' && <SignalRules user={user} setPage={setPage}/>} 
+    {page==='mt5ea' && <MT5TradeManagerEA setPage={setPage} setPaymentPlan={setPaymentPlan}/>} 
     {page==='archive' && <Archive user={user} setPage={setPage}/>} 
     {page==='referrals' && <ReferralCenter user={user} setPage={setPage}/>} 
     {page==='analysis' && <AnalysisPage user={user} setPage={setPage}/>} 
@@ -912,7 +916,59 @@ function Login({saveSession,setPage}){
   }
   return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2><form className="form" onSubmit={submit}>{mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>} {mode==='register'&&<input placeholder="Referral code (optional)" value={form.referralCode} onChange={e=>setForm({...form,referralCode:e.target.value.toUpperCase()})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg&&<p className="error">{msg}</p>}<p className="switchText">{mode==='login'?'No account? ':'Already have an account? '}<button type="button" className="textBtn" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Register':'Login'}</button></p></form></section>
 }
-function Payment({user,setUser,setPage}){ const[plan,setPlan]=useState('3 Months VIP - $100'),[method,setMethod]=useState('PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false),[coupon,setCoupon]=useState(''),[couponResult,setCouponResult]=useState(null); function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') } async function applyCoupon(){ setMsg(''); setCouponResult(null); if(!coupon){ setMsg('Enter coupon code first.'); return } try{ const data=await api('/api/coupons/validate',{method:'POST',body:JSON.stringify({code:coupon,planPrice:getPlanPrice(plan)})}); setCouponResult(data); setMsg(`Coupon applied: ${data.code}. Final price: $${data.finalPrice}`) }catch(err){ setMsg(err.message) } } async function submit(e){ e.preventDefault(); setMsg(''); if(!user){ setPage('login'); return } const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(couponResult){ fd.append('couponCode',couponResult.code); fd.append('originalPrice',String(couponResult.originalPrice)); fd.append('discountedPrice',String(couponResult.finalPrice)); fd.append('discountNote',`Discount ${couponResult.discount}`); } if(screenshot) fd.append('screenshot',screenshot); setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg('Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>Activate Your VIP Access</h2><div className="payGrid"><div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div><div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select><select value={method} onChange={e=>setMethod(e.target.value)}><option>PayPal</option><option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Note (optional)" value={note} onChange={e=>setNote(e.target.value)}/>
+
+function MT5TradeManagerEA({setPage,setPaymentPlan}){
+  function buyEA(){
+    setPaymentPlan('MT5 Trade Manager EA - $15')
+    setPage('payment')
+  }
+  return <section className="section eaProductPage">
+    <div className="eaHero">
+      <div>
+        <p className="green">MT5 TRADE MANAGEMENT TOOL</p>
+        <h2>Funded Trade Manager Pro 5.9</h2>
+        <p className="eaHeroText">A practical MetaTrader 5 trade management EA built for funded account traders who want tighter risk control, faster manual execution and cleaner position management.</p>
+        <div className="eaPriceBox"><span>One-time price</span><strong>$15</strong><small>MT5 EA access after payment proof approval</small></div>
+        <div className="heroActions">
+          <button onClick={buyEA}>Buy EA Now</button>
+          <a className="outlineBtn" href={WHATSAPP_CONTACT} target="_blank" rel="noreferrer">Ask Before Buying</a>
+        </div>
+        <p className="eaDisclaimer">This EA is a trade management tool only. It does not guarantee profit and it does not replace trading skill, discipline or risk management.</p>
+      </div>
+      <div className="eaPanelMock">
+        <div className="eaPanelHeader"><span>FTM Pro 5.9</span><b>MT5</b></div>
+        <div className="eaPanelRows"><p>Risk %: 0.5</p><p>Default SL: 100 pips</p><p>R:R: 1:2</p><p>Auto BE: Optional</p><p>Trailing Stop: Optional</p></div>
+        <div className="eaPanelBtns"><span>BUY</span><span>SELL</span><span>CLOSE</span></div>
+      </div>
+    </div>
+
+    <div className="eaFeatureGrid">
+      <div><h3>Risk-Based Lot Calculation</h3><p>Calculates lot size using account balance, risk percentage, SL pips, tick value and tick size for more accurate risk control across different instruments.</p></div>
+      <div><h3>Funded Account Protection</h3><p>Includes daily loss limit, max overall loss and drawdown percentage protection settings designed for funded challenge discipline.</p></div>
+      <div><h3>Position Limit Control</h3><p>Helps prevent overtrading with max positions per symbol, anti-hedging, anti-layering and minimum time between trades.</p></div>
+      <div><h3>Manual Trading Panel</h3><p>Fast BUY/SELL execution with confirmation option, SL pips, risk percentage and TP multiplier directly from the MT5 chart panel.</p></div>
+      <div><h3>Breakeven & Trailing Stop</h3><p>Optional auto breakeven and trailing stop controls with customizable breakeven pips, trail start and trail step settings.</p></div>
+      <div><h3>Pending Order Tools</h3><p>Optional Buy Limit / Sell Limit order placement with pending order distance, expiry hours and delete pending orders control.</p></div>
+      <div><h3>Close Management</h3><p>Buttons for close all trades, close only buys, close only sells, close half buys and close half sells.</p></div>
+      <div><h3>Multi-Symbol Pip Logic</h3><p>Uses dynamic pip and price calculations built for multiple instruments, including forex, gold, indices and other broker symbols.</p></div>
+    </div>
+
+    <div className="eaHowToBuy">
+      <div>
+        <p className="green">HOW TO BUY</p>
+        <h2>Buy The EA For $15</h2>
+        <p>Payment options for the EA are available without PayPal. After payment, upload or send proof and contact 1000PIPS support to receive the EA file/instructions.</p>
+      </div>
+      <div className="eaPaymentCards">
+        <div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div>
+        <div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div>
+      </div>
+      <div className="heroActions"><button onClick={buyEA}>Submit EA Payment Proof</button><a href={TELEGRAM_CONTACT} target="_blank" rel="noreferrer">Contact on Telegram</a></div>
+    </div>
+  </section>
+}
+
+function Payment({user,setUser,setPage,initialPlan=''}){ const defaultPlan=initialPlan || '3 Months VIP - $100'; const[plan,setPlan]=useState(defaultPlan),[method,setMethod]=useState(defaultPlan.includes('EA')?'Skrill':'PayPal'),[transactionId,setTransactionId]=useState(''),[note,setNote]=useState(''),[screenshot,setScreenshot]=useState(null),[preview,setPreview]=useState(''),[msg,setMsg]=useState(''),[loading,setLoading]=useState(false),[coupon,setCoupon]=useState(''),[couponResult,setCouponResult]=useState(null); useEffect(()=>{ if(initialPlan){ setPlan(initialPlan); if(initialPlan.includes('EA')) setMethod('Skrill') } },[initialPlan]); const isEAPlan=String(plan).toLowerCase().includes('ea') || String(plan).toLowerCase().includes('trade manager'); useEffect(()=>{ if(isEAPlan && method==='PayPal') setMethod('Skrill') },[isEAPlan,method]); function onFile(e){ const f=e.target.files[0]; setScreenshot(f||null); setPreview(f?URL.createObjectURL(f):'') } async function applyCoupon(){ setMsg(''); setCouponResult(null); if(!coupon){ setMsg('Enter coupon code first.'); return } try{ const data=await api('/api/coupons/validate',{method:'POST',body:JSON.stringify({code:coupon,planPrice:getPlanPrice(plan)})}); setCouponResult(data); setMsg(`Coupon applied: ${data.code}. Final price: $${data.finalPrice}`) }catch(err){ setMsg(err.message) } } async function submit(e){ e.preventDefault(); setMsg(''); if(!user){ setPage('login'); return } const fd=new FormData(); fd.append('plan',plan); fd.append('method',method); fd.append('transactionId',transactionId); fd.append('note',note); if(couponResult){ fd.append('couponCode',couponResult.code); fd.append('originalPrice',String(couponResult.originalPrice)); fd.append('discountedPrice',String(couponResult.finalPrice)); fd.append('discountNote',`Discount ${couponResult.discount}`); } if(screenshot) fd.append('screenshot',screenshot); setLoading(true); try{ await api('/api/payments/proof',{method:'POST',body:fd}); const updated={...user,plan,status:'pending_payment'}; localStorage.setItem('user',JSON.stringify(updated)); setUser(updated); setMsg(isEAPlan?'EA payment proof submitted successfully. Admin will review and send access instructions.':'Payment proof submitted successfully. Admin will review and approve your VIP access.'); setTransactionId(''); setNote(''); setScreenshot(null); setPreview('') }catch(err){ setMsg(err.message) } finally{ setLoading(false) } } return <section className="section"><p className="green">PAYMENT DETAILS</p><h2>{isEAPlan?'Buy MT5 Trade Manager EA':'Activate Your VIP Access'}</h2><div className="payGrid">{!isEAPlan&&<div><h3>PayPal</h3><p>{PAYPAL_EMAIL}</p></div>}<div><h3>Skrill</h3><p>{SKRILL_EMAIL}</p></div><div><h3>Binance Pay</h3><p>ID: {BINANCE_PAY_ID}</p></div></div><form className="form" onSubmit={submit}><select value={plan} onChange={e=>setPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option><option>MT5 Trade Manager EA - $15</option></select><select value={method} onChange={e=>setMethod(e.target.value)}>{!isEAPlan&&<option>PayPal</option>}<option>Skrill</option><option>Binance Pay</option></select><input required placeholder="Transaction ID / Payment Reference" value={transactionId} onChange={e=>setTransactionId(e.target.value)}/><textarea placeholder="Note (optional)" value={note} onChange={e=>setNote(e.target.value)}/>
         <div className="couponApplyBox">
           <input placeholder="Coupon code (optional)" value={coupon} onChange={e=>setCoupon(e.target.value.toUpperCase())}/>
           <button type="button" onClick={applyCoupon}>Apply Coupon</button>
@@ -1341,7 +1397,7 @@ ${t.notes}`,sendTelegram:true})
         {adminItems(adminReferrals,'referrals').map(r=><div key={r._id} className="adminRow"><strong>{r.referredName || r.referredEmail}</strong><p>Referred by: {r.referrerEmail}</p><p>Status: {r.status} | Plan: {r.plan || 'Not selected yet'}</p><div className="rowBtns"><button onClick={()=>updateReferral(r._id,'pending')}>Pending</button><button onClick={()=>updateReferral(r._id,'approved')}>Approved</button><button onClick={()=>updateReferral(r._id,'paid')}>Paid</button></div></div>)}
       </div>
       <div className="adminBox"><h3>Payment Proofs</h3>{payments.length===0&&<p>No payment proofs found.</p>}<AdminShowToggle itemsKey="payments" total={payments.length}/>{adminItems(payments,'payments').map(p=><div className="adminRow" key={p._id}><strong>{p.userName}</strong><p>{p.plan}</p><p>{p.method} | {p.transactionId}</p><p>Status: {p.status}</p><div className="rowBtns"><button onClick={()=>viewShot(p._id)}>View Screenshot</button>{p.status!=='approved'&&<button onClick={()=>approve(p._id)}>Approve VIP</button>}</div></div>)}</div>
-      <div className="adminBox full memberManagerBox"><h3>Member Search & Management</h3><p>Find members quickly by name, email, status or plan. Use filters to manage VIP, pending, expired and expiring members faster.</p><div className="memberManagerTools"><input placeholder="Search member by name, email, status or plan..." value={memberSearch} onChange={e=>setMemberSearch(e.target.value)}/><select value={renewPlan} onChange={e=>setRenewPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option></select></div><div className="memberFilterButtons">{memberFilterButtons.map(([key,label,count])=><button key={key} className={memberFilter===key?'active':''} onClick={()=>setMemberFilter(key)}>{label}<small>{count}</small></button>)}</div><div className="memberResultLine">Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length}</strong> members</div>{filteredUsers.length===0&&<p>No members found for this search/filter.</p>}<AdminShowToggle itemsKey="users" total={filteredUsers.length}/>{adminItems(filteredUsers,'users').map(u=>{ const statusText=String(u.status||'not_paid'); const expiring=u.vip&&isExpiringThisWeek(u.daysRemaining); return <div className="adminRow memberRow" key={u.id}><div className="memberRowHead"><div><strong>{u.name||'No name'}</strong><p>{u.email}</p></div><div className="memberBadges"><span className={u.vip?'memberBadge vip':'memberBadge normal'}>{u.vip?'VIP ACTIVE':'NOT VIP'}</span><span className={`memberBadge ${statusText.toLowerCase().replace(/[^a-z0-9]/g,'')}`}>{statusText}</span></div></div><p>Plan: {u.plan || 'No plan selected'}</p><p>Expires: {formatDate(u.vipExpiryDate)} | Remaining: {u.daysRemaining==='Lifetime'?'Lifetime':`${u.daysRemaining||0} days`}</p>{expiring&&<span className={isExpiringSoon(u.daysRemaining)?'dangerPill':'warnPill'}>{isExpiringSoon(u.daysRemaining)?'Renew urgently':'Expiring this week'}</span>}<div className="rowBtns"><button onClick={()=>renewVip(u.id)}>Renew / Extend VIP</button><button onClick={()=>removeVip(u.id)}>Remove VIP</button></div></div>})}</div>
+      <div className="adminBox full memberManagerBox"><h3>Member Search & Management</h3><p>Find members quickly by name, email, status or plan. Use filters to manage VIP, pending, expired and expiring members faster.</p><div className="memberManagerTools"><input placeholder="Search member by name, email, status or plan..." value={memberSearch} onChange={e=>setMemberSearch(e.target.value)}/><select value={renewPlan} onChange={e=>setRenewPlan(e.target.value)}><option>1 Month VIP - $45</option><option>3 Months VIP - $100</option><option>Lifetime VIP - $400</option><option>MT5 Trade Manager EA - $15</option></select></div><div className="memberFilterButtons">{memberFilterButtons.map(([key,label,count])=><button key={key} className={memberFilter===key?'active':''} onClick={()=>setMemberFilter(key)}>{label}<small>{count}</small></button>)}</div><div className="memberResultLine">Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length}</strong> members</div>{filteredUsers.length===0&&<p>No members found for this search/filter.</p>}<AdminShowToggle itemsKey="users" total={filteredUsers.length}/>{adminItems(filteredUsers,'users').map(u=>{ const statusText=String(u.status||'not_paid'); const expiring=u.vip&&isExpiringThisWeek(u.daysRemaining); return <div className="adminRow memberRow" key={u.id}><div className="memberRowHead"><div><strong>{u.name||'No name'}</strong><p>{u.email}</p></div><div className="memberBadges"><span className={u.vip?'memberBadge vip':'memberBadge normal'}>{u.vip?'VIP ACTIVE':'NOT VIP'}</span><span className={`memberBadge ${statusText.toLowerCase().replace(/[^a-z0-9]/g,'')}`}>{statusText}</span></div></div><p>Plan: {u.plan || 'No plan selected'}</p><p>Expires: {formatDate(u.vipExpiryDate)} | Remaining: {u.daysRemaining==='Lifetime'?'Lifetime':`${u.daysRemaining||0} days`}</p>{expiring&&<span className={isExpiringSoon(u.daysRemaining)?'dangerPill':'warnPill'}>{isExpiringSoon(u.daysRemaining)?'Renew urgently':'Expiring this week'}</span>}<div className="rowBtns"><button onClick={()=>renewVip(u.id)}>Renew / Extend VIP</button><button onClick={()=>removeVip(u.id)}>Remove VIP</button></div></div>})}</div>
       <div id="admin-signals" className="adminBox"><h3>Post Text Signal</h3><form onSubmit={postSignal} className="form compact"><input value={signal.title} onChange={e=>setSignal({...signal,title:e.target.value})}/><textarea rows="7" value={signal.message} onChange={e=>setSignal({...signal,message:e.target.value})}/><label className="check"><input type="checkbox" checked={signal.sendTelegram} onChange={e=>setSignal({...signal,sendTelegram:e.target.checked})}/> Send to Telegram</label><button>Post Signal</button></form></div>
       <div className="adminBox full"><h3>Posted Text Signals</h3><p className="smallNote">Use this to remove demo/test text signals from VIP Area.</p>{textSignals.length===0&&<p>No text signals found.</p>}<AdminShowToggle itemsKey="textSignals" total={textSignals.length}/>{adminItems(textSignals,'textSignals').map(s=><div className="adminRow" key={s._id}><strong>{s.title}</strong><p>Signal Given: {formatDateTime(s.createdAt)}</p><pre>{s.message}</pre><div className="rowBtns"><button onClick={()=>deleteTextSignal(s._id)}>Delete Signal</button></div></div>)}</div>
       <div className="adminBox"><h3>Add Trade Signal</h3>
@@ -1525,6 +1581,7 @@ function Footer({setPage}){ return <footer>
     <button onClick={()=>setPage('risk')}>Risk Warning</button>
     <button onClick={()=>setPage('terms')}>Terms & Conditions</button>
     <button onClick={()=>setPage('privacy')}>Privacy Policy</button>
+    <button onClick={()=>setPage('mt5ea')}>MT5 Trade Manager EA</button>
     <a href={IC_MARKETS_LINK} target="_blank" rel="noreferrer">IC Markets</a>
   </div>
   <small className="footerRiskNote">Trading involves risk. 1000PIPSFX does not guarantee profit.</small>
