@@ -1306,8 +1306,10 @@ ${t.notes}`,sendTelegram:true})
   }
   async function updateTrade(id, pips, rrr='', resultPercent=''){
     try{
-      await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify(tradeUpdatePayload(id,tradeStatusFromPips(pips),pips,rrr,resultPercent))})
-      setMsg('Trade result updated with exact pips, R:R and account %.')
+      // Manual close must stay as CLOSED, even when pips are positive.
+      // TP1 / TP2 / SL buttons are used only when the target or stop was actually hit.
+      await api(`/api/admin/trades/${id}`,{method:'PUT',body:JSON.stringify(tradeUpdatePayload(id,'closed',pips,rrr,resultPercent))})
+      setMsg('Trade manually closed with exact pips, R:R and account %.')
       await loadAdmin()
     }catch(err){ setMsg(err.message) }
   }
