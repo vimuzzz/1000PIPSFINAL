@@ -1565,3 +1565,31 @@ footer h2{color:#00ff88}
 .eaFeatureGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px}.eaFeatureGrid div,.eaPaymentCards div{background:linear-gradient(180deg,#111,#070707);border:1px solid rgba(0,255,136,.22);border-radius:24px;padding:22px}.eaFeatureGrid h3,.eaPaymentCards h3{color:#00ff88;margin-bottom:10px}.eaFeatureGrid p,.eaHowToBuy p,.eaPaymentCards p{color:#d0d0d0;line-height:1.65}
 .eaHowToBuy{margin-top:28px;background:linear-gradient(135deg,#080808,#07100b);border:1px solid rgba(0,255,136,.22);border-radius:30px;padding:34px}.eaPaymentCards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:22px 0}
 @media(max-width:950px){.eaHero{grid-template-columns:1fr;padding:32px 20px}.eaFeatureGrid{grid-template-columns:1fr}.eaPaymentCards{grid-template-columns:1fr}.eaPriceBox{width:100%}.eaPanelBtns{grid-template-columns:1fr}}
+
+
+/* Weekly / Monthly / Overall performance stats */
+.performanceStatsWrap{
+  display:grid;
+  gap:22px;
+  margin:20px 0 28px;
+}
+.performanceStatSection{
+  background:linear-gradient(180deg,#101820,#070707)!important;
+  border:1px solid rgba(0,255,136,.22)!important;
+  border-radius:24px!important;
+  padding:22px!important;
+}
+.performanceStatSection>h3{
+  color:#00ff88!important;
+  margin:0 0 16px!important;
+  font-size:22px!important;
+}
+.performanceStatSection .statsGrid{
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+}
+.performanceStatSection .statsGrid>div h3{
+  overflow-wrap:anywhere;
+}
+@media(max-width:760px){
+  .performanceStatSection{padding:18px!important;}
+}
