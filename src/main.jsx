@@ -448,7 +448,7 @@ function App(){
         <button onClick={()=>setPage('home')}>Home</button>
         <button onClick={()=>setPage('plans')}>VIP Plans</button>
         <button onClick={()=>setPage('analysis')}>Analysis</button>
-        <button onClick={()=>setPage('archive')}>Archive</button>
+        <button onClick={()=>setPage('archive')}>Past Performance</button>
         <button onClick={()=>setPage('dashboard')}>Dashboard</button>
         <button onClick={()=>setPage('vip')}>VIP Area</button>
         <button onClick={()=>setPage('rules')}>Signal Rules</button>
@@ -559,17 +559,17 @@ function Home({setPage}){
         <h2>Members Can See The Trading Report</h2>
         <p>
           1000PIPS includes a proper VIP dashboard with exact pips tracking, weekly reports,
-          archived performance history and market analysis posts. This helps members trust the process.
+          past performance history and market analysis posts. This helps members trust the process.
         </p>
         <div className="proofActions">
           <button onClick={()=>setPage('dashboard')}>View Dashboard</button>
-          <button className="outlineBtn" onClick={()=>setPage('archive')}>View Archive</button>
+          <button className="outlineBtn" onClick={()=>setPage('archive')}>View Past Performance</button>
         </div>
       </div>
       <div className="proofStats">
         <div><h3>Exact</h3><p>Pips Tracking</p></div>
         <div><h3>Weekly</h3><p>Report Generator</p></div>
-        <div><h3>VIP</h3><p>Performance Archive</p></div>
+        <div><h3>VIP</h3><p>Past Performance</p></div>
         <div><h3>Chart</h3><p>Based Analysis</p></div>
       </div>
     </section>
@@ -615,7 +615,7 @@ function Home({setPage}){
       <h2>Why Traders Choose 1000PIPS</h2>
       <p className="centerText">
         1000PIPS is built to give members more than random signals. Members can see chart analysis,
-        trade updates, weekly pips reports, performance archive and Telegram alerts in one place.
+        trade updates, weekly pips reports, past performance page and Telegram alerts in one place.
       </p>
       <div className="proofWallGrid">
         <div className="proofWallCard">
@@ -758,7 +758,7 @@ function Home({setPage}){
         </div>
         <div className="faqItem">
           <h3>Can I see past performance?</h3>
-          <p>VIP members can view the performance archive, weekly reports, total pips and win rate dashboard.</p>
+          <p>VIP members can view the past performance page, weekly reports, total pips and win rate dashboard.</p>
         </div>
         <div className="faqItem">
           <h3>Is profit guaranteed?</h3>
@@ -1077,7 +1077,7 @@ function SignalDashboard({user,setPage}){
   return <section className="section">
     <p className="green">SIGNAL DASHBOARD</p>
     <h2>Trading Performance</h2>
-    <div className="dashboardTopActions"><button className="refresh" onClick={load}>Refresh Dashboard</button><span>{filteredTrades.length} of {weeklyTrades.length} current/last week signals showing</span></div><div className="weeklyAutoNotice"><strong>Weekly Auto Display:</strong> Running trades, this week trades and last week trades only. Older history stays in reports/archive.</div>
+    <div className="dashboardTopActions"><button className="refresh" onClick={load}>Refresh Dashboard</button><span>{filteredTrades.length} of {weeklyTrades.length} current/last week signals showing</span></div><div className="weeklyAutoNotice"><strong>Weekly Auto Display:</strong> Running trades, this week trades and last week trades only. Older history stays in reports/past performance.</div>
     <AnnouncementsPanel mode="vip" user={user}/>
     {msg&&<p className="error">{msg}</p>}
     {stats&&<StatsCards stats={stats}/>}
@@ -1120,13 +1120,13 @@ function Archive({user,setPage}){
     try{ setReports(await api('/api/reports/public')) }catch(e){ setMsg(e.message) }
   }
   return <section className="section publicArchivePage">
-    <p className="green">PUBLIC PERFORMANCE ARCHIVE</p>
-    <h2>Past Weekly & Monthly Trading Reports</h2>
-    <p className="centerText">Review 1000PIPS archived trading reports before joining VIP. Live signals and full VIP dashboard access remain members-only.</p>
-    <div className="archiveTopActions"><button className="refresh" onClick={load}>Refresh Archive</button><button className="outlineBtn" onClick={()=>setPage(user?'dashboard':'plans')}>{user?'Open Dashboard':'Join VIP'}</button></div>
+    <p className="green">TRADING REPORT & PAST PERFORMANCE</p>
+    <h2>Trading Report & Past Performance</h2>
+    <p className="centerText">Review 1000PIPS past trading reports before joining VIP. Live signals and full VIP dashboard access remain members-only.</p>
+    <div className="archiveTopActions"><button className="refresh" onClick={load}>Refresh Report</button><button className="outlineBtn" onClick={()=>setPage(user?'dashboard':'plans')}>{user?'Open Dashboard':'Join VIP'}</button></div>
     {msg&&<p className="error">{msg}</p>}
     <div className="archivePosterGrid">
-      {reports.length===0&&<p>No archived reports yet.</p>}
+      {reports.length===0&&<p>No past performance reports yet.</p>}
       {reports.map(r=><WeeklyPerformanceStudio key={r._id} report={r} trades={[]} showActions={false} compact={true}/>) }
     </div>
   </section>
@@ -1328,7 +1328,7 @@ ${t.notes}`,sendTelegram:true})
   async function sendReportTelegram(){ try{ await api('/api/admin/report/send-telegram',{method:'POST'}); setMsg('Weekly report sent to Telegram.'); }catch(err){ setMsg(err.message) } }
   async function archiveCurrent(period, sendVipEmail=false){
     try{
-      const data = await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`, sendVipEmail})})
+      const data = await api('/api/admin/reports/past performance-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`, sendVipEmail})})
       if(sendVipEmail){
         const summary = data?.emailSummary
         setMsg(`${period} report saved and emailed to VIP members.${summary ? ` Sent: ${summary.sent}, Skipped: ${summary.skipped}, Failed: ${summary.failed}` : ''}`)
