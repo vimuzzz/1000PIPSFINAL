@@ -1593,3 +1593,16 @@ footer h2{color:#00ff88}
 @media(max-width:760px){
   .performanceStatSection{padding:18px!important;}
 }
+
+/* Trade Number Tracking Upgrade */
+.tradeNoBadge{
+  display:inline-block;
+  background:#00ff88;
+  color:#000;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+  margin-right:8px;
+  white-space:nowrap;
+}
