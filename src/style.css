@@ -1606,3 +1606,37 @@ footer h2{color:#00ff88}
   margin-right:8px;
   white-space:nowrap;
 }
+
+/* Trade price level readability fix - prevents long 5-decimal values being cut off */
+.premiumSignalLevels{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+.premiumSignalLevels div{
+  min-width:0!important;
+  overflow:visible!important;
+  padding:16px 18px!important;
+}
+.premiumSignalLevels strong{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:visible!important;
+  white-space:nowrap!important;
+  font-size:22px!important;
+  line-height:1.2!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:.2px!important;
+}
+.premiumSignalLevels span{
+  white-space:normal!important;
+  line-height:1.15!important;
+}
+@media(max-width:520px){
+  .premiumSignalLevels{
+    grid-template-columns:1fr!important;
+  }
+  .premiumSignalLevels strong{
+    font-size:21px!important;
+  }
+}
