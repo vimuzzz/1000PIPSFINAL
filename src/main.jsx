@@ -1359,7 +1359,7 @@ ${t.notes}`,sendTelegram:true})
   async function sendReportTelegram(){ try{ await api('/api/admin/report/send-telegram',{method:'POST'}); setMsg('Weekly report sent to Telegram.'); }catch(err){ setMsg(err.message) } }
   async function archiveCurrent(period, sendVipEmail=false){
     try{
-      const data = await api('/api/admin/reports/past performance-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`, sendVipEmail})})
+      const data = await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period,title:`${period} Performance Report`, sendVipEmail})})
       if(sendVipEmail){
         const summary = data?.emailSummary
         setMsg(`${period} report saved and emailed to VIP members.${summary ? ` Sent: ${summary.sent}, Skipped: ${summary.skipped}, Failed: ${summary.failed}` : ''}`)
