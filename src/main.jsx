@@ -219,14 +219,16 @@ function buildWeeklyReportText(report,trades=[]){
   const highlights=pickWeeklyHighlightTrades(trades,5)
   const lines=[
     '1000PIPS PERFORMANCE REPORT',
-    `Weekly Pips: ${stats.weeklyPips ?? 0}`,
-    `Weekly Account Growth: ${formatPercent(stats.weeklyGainPercent)}`,
+    `Weekly Growth: ${formatPercent(stats.weeklyGainPercent)}`,
+    `Weekly Pips: ${(Number(stats.weeklyPips||0)>0?'+':'')}${stats.weeklyPips ?? 0}`,
+    `Win Rate: ${stats.weeklyWinRate ?? stats.winRate ?? 0}% (${stats.weeklyWins ?? stats.wins ?? 0}W / ${stats.weeklyLosses ?? stats.losses ?? 0}L)`,
+    `Trades Closed: ${stats.weeklyClosedTrades ?? stats.closedTrades ?? 0}`,
+    `Average Risk per Trade: ${formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)}`,
+    `Maximum Risk per Trade: ${formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}`,
+    `Current Open Exposure: ${formatRiskPercent(stats.weeklyOpenExposurePercent ?? stats.weeklyRiskPercent ?? 0)} (Live)`,
+    `Maximum Weekly Drawdown: ${formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}`,
     `Current Month Pips: ${stats.monthlyPips ?? 0}`,
     `Monthly Account Growth: ${formatPercent(stats.monthlyGainPercent)}`,
-    `Total Risk Taken: ${formatRiskPercent(stats.weeklyRiskPercent)}`,
-    `Win Rate: ${stats.winRate ?? 0}%`,
-    `Wins: ${stats.wins ?? 0}`,
-    `Losses: ${stats.losses ?? 0}`,
     `Total Pips: ${stats.totalPips ?? 0}`,
     ''
   ]
@@ -295,14 +297,14 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   y+=42
 
   const statItems=[
-    ['Weekly Pips', String(stats.weeklyPips ?? 0)],
     ['Weekly Growth', formatPercent(stats.weeklyGainPercent)],
-    ['Month Pips', String(stats.monthlyPips ?? 0)],
-    ['Month Growth', formatPercent(stats.monthlyGainPercent)],
-    ['Weekly Risk', formatRiskPercent(stats.weeklyRiskPercent)],
-    ['Weekly Win Rate', `${stats.weeklyWinRate ?? stats.winRate ?? 0}%`],
-    ['Total Pips', String(stats.totalPips ?? 0)],
-    ['Total Growth', formatPercent(stats.totalGainPercent)]
+    ['Weekly Pips', String(stats.weeklyPips ?? 0)],
+    ['Win Rate', `${stats.weeklyWinRate ?? stats.winRate ?? 0}%`],
+    ['Trades Closed', String(stats.weeklyClosedTrades ?? stats.closedTrades ?? 0)],
+    ['Avg Risk / Trade', formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)],
+    ['Max Risk / Trade', formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)],
+    ['Open Exposure', formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)],
+    ['Max Drawdown', formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)]
   ]
   statItems.forEach((item,i)=>{
     const x=margin + (i%2)*(cardW+gap)
@@ -358,9 +360,9 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   ctx.fillText('Weekly Summary',margin+28,y+42)
   const summaryLines=[
     `Weekly: ${stats.weeklyPips ?? 0} pips | Growth: ${formatPercent(stats.weeklyGainPercent)}`,
-    `Current Month: ${stats.monthlyPips ?? 0} pips | Growth: ${formatPercent(stats.monthlyGainPercent)}`,
-    `Weekly Win Rate: ${stats.weeklyWinRate ?? stats.winRate ?? 0}% | Wins/Losses: ${stats.weeklyWins ?? stats.wins ?? 0}/${stats.weeklyLosses ?? stats.losses ?? 0}`,
-    `Weekly Closed: ${stats.weeklyClosedTrades ?? stats.closedTrades ?? 0} | Weekly Open: ${stats.weeklyOpenTrades ?? stats.activeTrades ?? 0}`,
+    `Win Rate: ${stats.weeklyWinRate ?? stats.winRate ?? 0}% | Wins/Losses: ${stats.weeklyWins ?? stats.wins ?? 0}/${stats.weeklyLosses ?? stats.losses ?? 0}`,
+    `Avg Risk: ${formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)} | Max Risk: ${formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}`,
+    `Open Exposure: ${formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)} | Max Drawdown: ${formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}`,
     `Risk management first. Trade with discipline.`
   ].slice(0,preset.summaryLines)
   ctx.fillStyle='#dfe7f5'
@@ -383,7 +385,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   link.click()
 }
 function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
-  const stats=report?.stats || {weeklyPips:report?.weeklyPips||report?.totalPips||0, weeklyGainPercent:report?.weeklyGainPercent||report?.totalGainPercent||0, monthlyPips:report?.monthlyPips||0, monthlyGainPercent:report?.monthlyGainPercent||0, totalGainPercent:report?.totalGainPercent||0, weeklyRiskPercent:report?.weeklyRiskPercent||0, monthlyRiskPercent:report?.monthlyRiskPercent||0, winRate:report?.winRate||0, weeklyWinRate:report?.weeklyWinRate||report?.winRate||0, monthlyWinRate:report?.monthlyWinRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.weeklyOpenTrades||report?.activeTrades||0}
+  const stats=report?.stats || {weeklyPips:report?.weeklyPips||report?.totalPips||0, weeklyGainPercent:report?.weeklyGainPercent||report?.totalGainPercent||0, monthlyPips:report?.monthlyPips||0, monthlyGainPercent:report?.monthlyGainPercent||0, totalGainPercent:report?.totalGainPercent||0, weeklyRiskPercent:report?.weeklyRiskPercent||0, weeklyAverageRiskPercent:report?.weeklyAverageRiskPercent||0, weeklyMaxRiskPercent:report?.weeklyMaxRiskPercent||0, weeklyOpenExposurePercent:report?.weeklyOpenExposurePercent||0, weeklyMaxDrawdownPercent:report?.weeklyMaxDrawdownPercent||0, monthlyRiskPercent:report?.monthlyRiskPercent||0, winRate:report?.winRate||0, weeklyWinRate:report?.weeklyWinRate||report?.winRate||0, monthlyWinRate:report?.monthlyWinRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.weeklyOpenTrades||report?.activeTrades||0}
   const normalizedReport={...report,stats}
   const highlights=pickWeeklyHighlightTrades(trades, compact?3:5)
   const title=report?.title || (report?.period?`${report.period} Performance Report`:'Weekly Performance Report')
@@ -398,14 +400,14 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
       <div className="weeklyPosterBrand">1000PIPS</div>
     </div>
     <div className="weeklyPosterStatGrid">
-      <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
       <div><span>Weekly Growth</span><strong>{formatPercent(stats.weeklyGainPercent)}</strong></div>
-      <div><span>Monthly Pips</span><strong>{stats.monthlyPips ?? 0}</strong></div>
-      <div><span>Monthly Growth</span><strong>{formatPercent(stats.monthlyGainPercent)}</strong></div>
-      <div><span>Weekly Risk</span><strong>{formatRiskPercent(stats.weeklyRiskPercent)}</strong></div>
-      <div><span>Weekly Win Rate</span><strong>{stats.weeklyWinRate ?? stats.winRate ?? 0}%</strong></div>
-      <div><span>Total Pips</span><strong>{stats.totalPips ?? 0}</strong></div>
-      <div><span>Total Growth</span><strong>{formatPercent(stats.totalGainPercent)}</strong></div>
+      <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
+      <div><span>Win Rate</span><strong>{stats.weeklyWinRate ?? stats.winRate ?? 0}%</strong></div>
+      <div><span>Trades Closed</span><strong>{stats.weeklyClosedTrades ?? stats.closedTrades ?? 0}</strong></div>
+      <div><span>Avg Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)}</strong></div>
+      <div><span>Max Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}</strong></div>
+      <div><span>Open Exposure</span><strong>{formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)}</strong></div>
+      <div><span>Max Drawdown</span><strong>{formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}</strong></div>
     </div>
     {!!highlights.length && !compact && <div className="weeklyPosterHighlights">
       <h4>Top Trade Updates</h4>
@@ -1064,11 +1066,15 @@ function Payment({user,setUser,setPage,initialPlan=''}){ const defaultPlan=initi
         </div>}<label className="uploadBox">Upload payment screenshot<input type="file" accept="image/*" onChange={onFile}/></label>{preview&&<img className="preview" src={preview}/>}<button disabled={loading}>{loading?'Submitting...':'Submit Payment Proof'}</button>{msg&&<p className={msg.includes('successfully')?'success':'error'}>{msg}</p>}</form></section> }
 function StatsCards({stats}){ return <div className="performanceStatsWrap">
   <div className="performanceStatSection"><h3>Weekly Performance</h3><div className="statsGrid">
-    <div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div>
     <div><h3>{formatPercent(stats.weeklyGainPercent)}</h3><p>Weekly Growth</p></div>
-    <div><h3>{stats.weeklyWinRate ?? stats.winRate}%</h3><p>Weekly Accuracy</p></div>
-    <div><h3>{formatRiskPercent(stats.weeklyRiskPercent)}</h3><p>Weekly Risk</p></div>
-    <div><h3>{stats.weeklyClosedTrades ?? 0}</h3><p>Weekly Closed</p></div>
+    <div><h3>{stats.weeklyPips}</h3><p>Weekly Pips</p></div>
+    <div><h3>{stats.weeklyWinRate ?? stats.winRate}%</h3><p>Win Rate</p></div>
+    <div><h3>{stats.weeklyWins ?? 0}W / {stats.weeklyLosses ?? 0}L</h3><p>Weekly Result</p></div>
+    <div><h3>{stats.weeklyClosedTrades ?? 0}</h3><p>Trades Closed</p></div>
+    <div><h3>{formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)}</h3><p>Avg Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}</h3><p>Max Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)}</h3><p>Open Exposure</p></div>
+    <div><h3>{formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}</h3><p>Max Drawdown</p></div>
     <div><h3>{stats.weeklyOpenTrades ?? stats.activeTrades}</h3><p>Weekly Open</p></div>
   </div></div>
   <div className="performanceStatSection"><h3>Monthly Performance</h3><div className="statsGrid">
