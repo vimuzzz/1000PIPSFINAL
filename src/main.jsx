@@ -921,20 +921,86 @@ function Plans({setPage}){
 }
 function Login({saveSession,setPage}){
   const[mode,setMode]=useState('login')
-  const[form,setForm]=useState({name:'',email:'',password:'',referralCode:new URLSearchParams(window.location.search).get('ref')||''})
+  const[form,setForm]=useState({name:'',email:'',password:'',newPassword:'',resetCode:'',referralCode:new URLSearchParams(window.location.search).get('ref')||''})
   const[msg,setMsg]=useState('')
+  const[msgType,setMsgType]=useState('error')
   const[loading,setLoading]=useState(false)
+
+  function showMessage(text,type='error'){
+    setMsg(text)
+    setMsgType(type)
+  }
+
   async function submit(e){
-    e.preventDefault(); setMsg(''); setLoading(true)
+    e.preventDefault(); showMessage(''); setLoading(true)
     try{
       const path=mode==='login'?'/api/auth/login':'/api/auth/register'
       const payload=mode==='login'?{email:form.email,password:form.password}:{name:form.name,email:form.email,password:form.password,referralCode:form.referralCode}
       const data=await api(path,{method:'POST',body:JSON.stringify(payload)})
       saveSession(data.token,data.user)
       setPage(data.user.role==='admin'?'admin':'payment')
-    }catch(err){ setMsg(err.message) } finally{ setLoading(false) }
+    }catch(err){ showMessage(err.message) } finally{ setLoading(false) }
   }
-  return <section className="section narrow"><p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p><h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2><form className="form" onSubmit={submit}>{mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>} {mode==='register'&&<input placeholder="Referral code (optional)" value={form.referralCode} onChange={e=>setForm({...form,referralCode:e.target.value.toUpperCase()})}/>}<input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/><input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/><button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>{msg&&<p className="error">{msg}</p>}<p className="switchText">{mode==='login'?'No account? ':'Already have an account? '}<button type="button" className="textBtn" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Register':'Login'}</button></p></form></section>
+
+  async function requestPasswordReset(e){
+    e.preventDefault(); showMessage(''); setLoading(true)
+    try{
+      const data=await api('/api/auth/forgot-password',{method:'POST',body:JSON.stringify({email:form.email})})
+      showMessage(data.message || 'Reset code sent. Check your email.','success')
+      setMode('reset')
+    }catch(err){ showMessage(err.message) } finally{ setLoading(false) }
+  }
+
+  async function resetPassword(e){
+    e.preventDefault(); showMessage(''); setLoading(true)
+    try{
+      const data=await api('/api/auth/reset-password',{method:'POST',body:JSON.stringify({email:form.email,code:form.resetCode,password:form.newPassword})})
+      showMessage(data.message || 'Password changed successfully. You can login now.','success')
+      setForm({...form,password:'',newPassword:'',resetCode:''})
+      setMode('login')
+    }catch(err){ showMessage(err.message) } finally{ setLoading(false) }
+  }
+
+  if(mode==='forgot') return <section className="section narrow">
+    <p className="green">PASSWORD RECOVERY</p>
+    <h2>Reset Your Password</h2>
+    <p className="centerText">Enter your registered email. We will send a 6-digit reset code.</p>
+    <form className="form" onSubmit={requestPasswordReset}>
+      <input required type="email" placeholder="Registered email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+      <button disabled={loading}>{loading?'Sending...':'Send Reset Code'}</button>
+      {msg&&<p className={msgType==='success'?'success':'error'}>{msg}</p>}
+      <p className="switchText"><button type="button" className="textBtn" onClick={()=>{setMode('login');showMessage('')}}>Back to Login</button></p>
+    </form>
+  </section>
+
+  if(mode==='reset') return <section className="section narrow">
+    <p className="green">PASSWORD RECOVERY</p>
+    <h2>Enter Reset Code</h2>
+    <p className="centerText">Check your email and enter the 6-digit code. The code expires in 15 minutes.</p>
+    <form className="form" onSubmit={resetPassword}>
+      <input required type="email" placeholder="Registered email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+      <input required placeholder="6-digit reset code" value={form.resetCode} onChange={e=>setForm({...form,resetCode:e.target.value.replace(/\D/g,'').slice(0,6)})}/>
+      <input required type="password" placeholder="New password" value={form.newPassword} onChange={e=>setForm({...form,newPassword:e.target.value})}/>
+      <button disabled={loading}>{loading?'Updating...':'Change Password'}</button>
+      {msg&&<p className={msgType==='success'?'success':'error'}>{msg}</p>}
+      <p className="switchText"><button type="button" className="textBtn" onClick={()=>setMode('forgot')}>Request New Code</button> · <button type="button" className="textBtn" onClick={()=>{setMode('login');showMessage('')}}>Back to Login</button></p>
+    </form>
+  </section>
+
+  return <section className="section narrow">
+    <p className="green">{mode==='login'?'LOGIN':'REGISTER'}</p>
+    <h2>{mode==='login'?'Member Login':'Create VIP Account'}</h2>
+    <form className="form" onSubmit={submit}>
+      {mode==='register'&&<input required placeholder="Full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>}
+      {mode==='register'&&<input placeholder="Referral code (optional)" value={form.referralCode} onChange={e=>setForm({...form,referralCode:e.target.value.toUpperCase()})}/>}
+      <input required type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+      <input required type="password" placeholder="Password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/>
+      <button disabled={loading}>{loading?'Please wait...':mode==='login'?'Login':'Register'}</button>
+      {msg&&<p className={msgType==='success'?'success':'error'}>{msg}</p>}
+      {mode==='login'&&<p className="switchText"><button type="button" className="textBtn" onClick={()=>{setMode('forgot');showMessage('')}}>Forgot password?</button></p>}
+      <p className="switchText">{mode==='login'?'No account? ':'Already have an account? '}<button type="button" className="textBtn" onClick={()=>{setMode(mode==='login'?'register':'login');showMessage('')}}>{mode==='login'?'Register':'Login'}</button></p>
+    </form>
+  </section>
 }
 
 function MT5TradeManagerEA({setPage,setPaymentPlan}){

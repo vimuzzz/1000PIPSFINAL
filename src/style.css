@@ -1640,3 +1640,24 @@ footer h2{color:#00ff88}
     font-size:21px!important;
   }
 }
+
+/* Password Recovery Upgrade */
+.narrow{
+  max-width:720px!important;
+}
+.switchText{
+  color:#d0d0d0;
+  text-align:center;
+  line-height:1.7;
+}
+.textBtn{
+  background:transparent!important;
+  color:#00ff88!important;
+  border:none!important;
+  padding:0!important;
+  font-weight:900!important;
+  text-decoration:underline;
+}
+.textBtn:hover{
+  color:#ffffff!important;
+}
