@@ -1081,7 +1081,10 @@ function StatsCards({stats}){ return <div className="performanceStatsWrap">
     <div><h3>{stats.monthlyPips ?? 0}</h3><p>Current Month Pips</p></div>
     <div><h3>{formatPercent(stats.monthlyGainPercent)}</h3><p>Monthly Growth</p></div>
     <div><h3>{stats.monthlyWinRate ?? 0}%</h3><p>Monthly Accuracy</p></div>
-    <div><h3>{formatRiskPercent(stats.monthlyRiskPercent)}</h3><p>Monthly Risk</p></div>
+    <div><h3>{formatRiskPercent(stats.monthlyAverageRiskPercent ?? 0)}</h3><p>Avg Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.monthlyMaxRiskPercent ?? 0)}</h3><p>Max Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.monthlyOpenExposurePercent ?? 0)}</h3><p>Open Exposure</p></div>
+    <div><h3>{formatRiskPercent(stats.monthlyMaxDrawdownPercent ?? 0)}</h3><p>Max Drawdown</p></div>
     <div><h3>{stats.monthlyClosedTrades ?? 0}</h3><p>Monthly Closed</p></div>
     <div><h3>{stats.monthlyOpenTrades ?? 0}</h3><p>Monthly Open</p></div>
   </div></div>
@@ -1089,7 +1092,10 @@ function StatsCards({stats}){ return <div className="performanceStatsWrap">
     <div><h3>{stats.totalPips}</h3><p>Total Pips</p></div>
     <div><h3>{formatPercent(stats.totalGainPercent)}</h3><p>Total Growth</p></div>
     <div><h3>{stats.winRate}%</h3><p>Overall Accuracy</p></div>
-    <div><h3>{formatRiskPercent(stats.totalRiskPercent)}</h3><p>Total Risk</p></div>
+    <div><h3>{formatRiskPercent(stats.overallAverageRiskPercent ?? 0)}</h3><p>Avg Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.overallMaxRiskPercent ?? 0)}</h3><p>Max Risk / Trade</p></div>
+    <div><h3>{formatRiskPercent(stats.currentOpenExposurePercent ?? 0)}</h3><p>Current Open Exposure</p></div>
+    <div><h3>{formatRiskPercent(stats.totalMaxDrawdownPercent ?? 0)}</h3><p>Max Drawdown</p></div>
     <div><h3>{stats.closedTrades}</h3><p>Total Closed</p></div>
     <div><h3>{stats.totalOpenTrades ?? 0}</h3><p>Total Open</p></div>
   </div></div>
