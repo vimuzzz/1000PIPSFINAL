@@ -148,6 +148,52 @@ function formatPercent(value){ const n=round2(value); if(!Number.isFinite(n)||n=
 function optionalPercent(value){ const n=Number(value||0); if(!Number.isFinite(n)||n===0) return ''; return `${n>0?'+':''}${round2(n)}%` }
 function round2(value){ const n=Number(value||0); if(!Number.isFinite(n)) return 0; return Math.round(n*100)/100 }
 function formatRiskPercent(value){ const n=round2(value); return `${n}%` }
+function metricValue(stats, primary, fallback, defaultValue=0){
+  const value = Number(stats?.[primary] ?? 0)
+  if(value !== 0 || fallback === undefined) return stats?.[primary] ?? defaultValue
+  return stats?.[fallback] ?? defaultValue
+}
+function metricPercent(stats, primary, fallback){
+  return formatPercent(metricValue(stats, primary, fallback, 0))
+}
+function metricRisk(stats, primary, fallback){
+  return formatRiskPercent(metricValue(stats, primary, fallback, 0))
+}
+function reportStats(report={}){
+  if(report?.stats) return report.stats
+  return {
+    weeklyPips: metricValue(report,'weeklyPips','totalPips',0),
+    weeklyGainPercent: metricValue(report,'weeklyGainPercent','totalGainPercent',0),
+    weeklyWinRate: metricValue(report,'weeklyWinRate','winRate',0),
+    weeklyWins: metricValue(report,'weeklyWins','wins',0),
+    weeklyLosses: metricValue(report,'weeklyLosses','losses',0),
+    weeklyClosedTrades: metricValue(report,'weeklyClosedTrades','closedTrades',0),
+    weeklyOpenTrades: report.weeklyOpenTrades ?? report.totalOpenTrades ?? report.activeTrades ?? 0,
+    weeklyAverageRiskPercent: report.weeklyAverageRiskPercent ?? report.overallAverageRiskPercent ?? 0,
+    weeklyMaxRiskPercent: report.weeklyMaxRiskPercent ?? report.overallMaxRiskPercent ?? 0,
+    weeklyOpenExposurePercent: report.weeklyOpenExposurePercent ?? report.currentOpenExposurePercent ?? 0,
+    weeklyMaxDrawdownPercent: report.weeklyMaxDrawdownPercent ?? report.totalMaxDrawdownPercent ?? 0,
+    monthlyPips: report.monthlyPips ?? report.totalPips ?? 0,
+    monthlyGainPercent: report.monthlyGainPercent ?? report.totalGainPercent ?? 0,
+    monthlyWinRate: report.monthlyWinRate ?? report.winRate ?? 0,
+    monthlyWins: report.monthlyWins ?? report.wins ?? 0,
+    monthlyLosses: report.monthlyLosses ?? report.losses ?? 0,
+    monthlyClosedTrades: metricValue(report,'monthlyClosedTrades','closedTrades',0),
+    monthlyOpenTrades: report.monthlyOpenTrades ?? report.totalOpenTrades ?? 0,
+    monthlyAverageRiskPercent: report.monthlyAverageRiskPercent ?? report.overallAverageRiskPercent ?? 0,
+    monthlyMaxRiskPercent: report.monthlyMaxRiskPercent ?? report.overallMaxRiskPercent ?? 0,
+    monthlyOpenExposurePercent: report.monthlyOpenExposurePercent ?? report.currentOpenExposurePercent ?? 0,
+    monthlyMaxDrawdownPercent: report.monthlyMaxDrawdownPercent ?? report.totalMaxDrawdownPercent ?? 0,
+    monthlyWeekBreakdown: report.monthlyWeekBreakdown || [],
+    totalPips: report.totalPips ?? 0,
+    totalGainPercent: report.totalGainPercent ?? 0,
+    winRate: report.winRate ?? 0,
+    wins: report.wins ?? 0,
+    losses: report.losses ?? 0,
+    closedTrades: report.closedTrades ?? 0,
+    totalOpenTrades: report.totalOpenTrades ?? 0
+  }
+}
 function VipBadge({user}){ if(!user) return null; if(user.vip && isExpiringSoon(user.daysRemaining)) return <div className="warningBadge">VIP expires in {user.daysRemaining} day{Number(user.daysRemaining)===1?'':'s'} · Renew soon</div>; if(user.vip) return <div className="vipBadge">VIP Active · {user.daysRemaining==='Lifetime'?'Lifetime':`${user.daysRemaining} days left`}</div>; if(user.status==='expired') return <div className="expiredBadge">VIP Expired</div>; return <div className="pendingBadge">Status: {user.status||'Not Paid'}</div> }
 function imgSrcFromPost(post){ return post.chartImageData ? `data:${post.chartImageMime};base64,${post.chartImageData}` : '' }
 function imgSrcFromProof(proof){ return proof.proofImageData ? `data:${proof.proofImageMime};base64,${proof.proofImageData}` : '' }
@@ -385,36 +431,63 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   link.click()
 }
 function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
-  const stats=report?.stats || {weeklyPips:report?.weeklyPips||report?.totalPips||0, weeklyGainPercent:report?.weeklyGainPercent||report?.totalGainPercent||0, monthlyPips:report?.monthlyPips||0, monthlyGainPercent:report?.monthlyGainPercent||0, totalGainPercent:report?.totalGainPercent||0, weeklyRiskPercent:report?.weeklyRiskPercent||0, weeklyAverageRiskPercent:report?.weeklyAverageRiskPercent||0, weeklyMaxRiskPercent:report?.weeklyMaxRiskPercent||0, weeklyOpenExposurePercent:report?.weeklyOpenExposurePercent||0, weeklyMaxDrawdownPercent:report?.weeklyMaxDrawdownPercent||0, monthlyRiskPercent:report?.monthlyRiskPercent||0, winRate:report?.winRate||0, weeklyWinRate:report?.weeklyWinRate||report?.winRate||0, monthlyWinRate:report?.monthlyWinRate||0, wins:report?.wins||0, losses:report?.losses||0, totalPips:report?.totalPips||0, activeTrades:report?.weeklyOpenTrades||report?.activeTrades||0}
+  const stats=reportStats(report)
   const normalizedReport={...report,stats}
   const highlights=pickWeeklyHighlightTrades(trades, compact?3:5)
-  const title=report?.title || (report?.period?`${report.period} Performance Report`:'Weekly Performance Report')
+  const isMonthly=String(report?.period||'Weekly').toLowerCase().includes('month')
   const subDate=new Date(report?.createdAt||Date.now()).toLocaleDateString()
+  const title=report?.title || (isMonthly?'Monthly Performance Report':'Weekly Performance Report')
+  const monthlyWeeks=stats.monthlyWeekBreakdown || []
   return <div className={compact?'weeklyPosterCard compact':'weeklyPosterCard'}>
     <div className="weeklyPosterHeader">
       <div>
         <span className="weeklyPosterKicker">1000PIPS PERFORMANCE</span>
         <h3>{title}</h3>
-        <p>{report?.period || 'Weekly'} · {subDate}</p>
+        <p>{report?.period || (isMonthly?'Monthly':'Weekly')} · {subDate}</p>
       </div>
       <div className="weeklyPosterBrand">1000PIPS</div>
     </div>
-    <div className="weeklyPosterStatGrid">
-      <div><span>Weekly Growth</span><strong>{formatPercent(stats.weeklyGainPercent)}</strong></div>
-      <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
-      <div><span>Win Rate</span><strong>{stats.weeklyWinRate ?? stats.winRate ?? 0}%</strong></div>
-      <div><span>Trades Closed</span><strong>{stats.weeklyClosedTrades ?? stats.closedTrades ?? 0}</strong></div>
-      <div><span>Avg Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)}</strong></div>
-      <div><span>Max Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}</strong></div>
-      <div><span>Open Exposure</span><strong>{formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)}</strong></div>
-      <div><span>Max Drawdown</span><strong>{formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}</strong></div>
-    </div>
-    {!!highlights.length && !compact && <div className="weeklyPosterHighlights">
-      <h4>Top Trade Updates</h4>
-      <div className="weeklyHighlightList">
-        {highlights.map(t=>{ const p=Number(t.resultPips||0); return <div className="weeklyHighlightRow" key={t._id||`${t.pair}-${t.createdAt}`}><strong>{tradeNoText(t,trades)} · {t.pair} {t.direction}</strong><span>{signalStatusLabel(t.status,t.resultPips)}</span><b className={p>0?'positive':p<0?'negative':'neutral'}>{p>0?'+':''}{p} pips {optionalPercent(t.resultPercent)}</b></div> })}
+
+    {!isMonthly && <>
+      <div className="weeklyPosterStatGrid">
+        <div><span>Weekly Growth</span><strong>{formatPercent(stats.weeklyGainPercent)}</strong></div>
+        <div><span>Weekly Pips</span><strong>{stats.weeklyPips ?? 0}</strong></div>
+        <div><span>Win Rate</span><strong>{stats.weeklyWinRate ?? stats.winRate ?? 0}%</strong></div>
+        <div><span>Trades Closed</span><strong>{stats.weeklyClosedTrades ?? stats.closedTrades ?? 0}</strong></div>
+        <div><span>Avg Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)}</strong></div>
+        <div><span>Max Risk / Trade</span><strong>{formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}</strong></div>
+        <div><span>Open Exposure</span><strong>{formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)}</strong></div>
+        <div><span>Max Drawdown</span><strong>{formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}</strong></div>
       </div>
-    </div>}
+      {!!highlights.length && !compact && <div className="weeklyPosterHighlights">
+        <h4>Top Trade Updates</h4>
+        <div className="weeklyHighlightList">
+          {highlights.map(t=>{ const p=Number(t.resultPips||0); return <div className="weeklyHighlightRow" key={t._id||`${t.pair}-${t.createdAt}`}><strong>{tradeNoText(t,trades)} · {t.pair} {t.direction}</strong><span>{signalStatusLabel(t.status,t.resultPips)}</span><b className={p>0?'positive':p<0?'negative':'neutral'}>{p>0?'+':''}{p} pips {optionalPercent(t.resultPercent)}</b></div> })}
+        </div>
+      </div>}
+    </>}
+
+    {isMonthly && <>
+      <div className="weeklyPosterStatGrid monthlyReportStats">
+        <div><span>Monthly Growth</span><strong>{formatPercent(stats.monthlyGainPercent)}</strong></div>
+        <div><span>Monthly Pips</span><strong>{stats.monthlyPips ?? 0}</strong></div>
+        <div><span>Monthly DD</span><strong>{formatRiskPercent(stats.monthlyMaxDrawdownPercent ?? 0)}</strong></div>
+        <div><span>Avg Risk / Trade</span><strong>{formatRiskPercent(stats.monthlyAverageRiskPercent ?? 0)}</strong></div>
+        <div><span>Win Rate</span><strong>{stats.monthlyWinRate ?? 0}%</strong></div>
+        <div><span>Trades Closed</span><strong>{stats.monthlyClosedTrades ?? 0}</strong></div>
+      </div>
+      <div className="monthlyWeekBreakdown">
+        <h4>Weekly Breakdown</h4>
+        {monthlyWeeks.length===0 && <p>No weekly breakdown saved for this monthly report.</p>}
+        {monthlyWeeks.map((w,i)=><div className="monthlyWeekRow" key={w.label||i}>
+          <strong>{w.label || `Week ${i+1}`}</strong>
+          <span>Growth: {formatPercent(w.gainPercent)}</span>
+          <span>Pips: {Number(w.pips||0)>0?'+':''}{w.pips||0}</span>
+          <span>Closed: {w.closedTrades||0}</span>
+        </div>)}
+      </div>
+    </>}
+
     <div className="weeklyPosterNarrative">
       <h4>Report Summary</h4>
       <pre>{buildWeeklyReportText(normalizedReport,trades)}</pre>
@@ -422,7 +495,6 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
     {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'square')}>Download Instagram Square</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'portrait')}>Download Telegram Portrait</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'status')}>Download WhatsApp Status</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
   </div>
 }
-
 
 function AnnouncementsPanel({mode='public', user=null}){
   const [items,setItems]=useState([])

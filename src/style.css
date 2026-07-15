@@ -1661,3 +1661,33 @@ footer h2{color:#00ff88}
 .textBtn:hover{
   color:#ffffff!important;
 }
+
+/* Monthly report weekly breakdown upgrade */
+.monthlyWeekBreakdown{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:20px;
+  padding:18px;
+  margin-top:16px;
+  position:relative;
+  z-index:1;
+}
+.monthlyWeekBreakdown h4{margin:0 0 14px;color:#fff;font-size:18px}
+.monthlyWeekBreakdown p{color:#aab3c5;line-height:1.6}
+.monthlyWeekRow{
+  display:grid;
+  grid-template-columns:1.1fr 1fr .8fr .7fr;
+  gap:10px;
+  align-items:center;
+  padding:12px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:#dfe7f5;
+  font-size:14px;
+}
+.monthlyWeekRow:first-of-type{border-top:none}
+.monthlyWeekRow strong{color:#7efcc6}
+.monthlyWeekRow span{color:#dfe7f5}
+.weeklyPosterCard.compact .monthlyWeekRow{grid-template-columns:1fr 1fr;font-size:13px}
+@media(max-width:760px){
+  .monthlyWeekRow{grid-template-columns:1fr;gap:4px}
+}
