@@ -297,9 +297,12 @@ async function copyTextToClipboard(text){
   document.execCommand('copy')
   document.body.removeChild(area)
 }
-function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
+function downloadWeeklyPerformancePoster(report,trades=[],format='portrait',periodType='Weekly'){
   if(!report) return
   const stats=report.stats||{}
+  const isMonthly = String(periodType||'Weekly').toLowerCase()==='monthly'
+  const pfx = isMonthly ? 'monthly' : 'weekly'
+  const g = (key, fallback=0) => stats[`${pfx}${key}`] ?? fallback
   const presets={
     square:{width:1080,height:1080,label:'instagram-square',highlights:3,summaryLines:5,cardH:104,statFont:38},
     portrait:{width:1080,height:1350,label:'telegram-portrait',highlights:3,summaryLines:5,cardH:110,statFont:38},
@@ -335,7 +338,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   y+=38
   ctx.fillStyle='#ffffff'
   ctx.font=format==='square'?'700 54px Arial':'700 60px Arial'
-  ctx.fillText('WEEKLY PERFORMANCE',margin,y+36)
+  ctx.fillText(isMonthly?'MONTHLY PERFORMANCE':'WEEKLY PERFORMANCE',margin,y+36)
   y+=72
   ctx.fillStyle='#aab3c5'
   ctx.font='28px Arial'
@@ -343,14 +346,14 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   y+=42
 
   const statItems=[
-    ['Weekly Growth', formatPercent(stats.weeklyGainPercent)],
-    ['Weekly Pips', String(stats.weeklyPips ?? 0)],
-    ['Win Rate', `${stats.weeklyWinRate ?? stats.winRate ?? 0}%`],
-    ['Trades Closed', String(stats.weeklyClosedTrades ?? stats.closedTrades ?? 0)],
-    ['Avg Risk / Trade', formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)],
-    ['Max Risk / Trade', formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)],
-    ['Open Exposure', formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)],
-    ['Max Drawdown', formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)]
+    [isMonthly?'Monthly Growth':'Weekly Growth', formatPercent(g('GainPercent'))],
+    [isMonthly?'Monthly Pips':'Weekly Pips', String(g('Pips'))],
+    ['Win Rate', `${g('WinRate', stats.winRate ?? 0)}%`],
+    ['Trades Closed', String(g('ClosedTrades', stats.closedTrades ?? 0))],
+    ['Avg Risk / Trade', formatRiskPercent(g('AverageRiskPercent'))],
+    ['Max Risk / Trade', formatRiskPercent(g('MaxRiskPercent'))],
+    ['Open Exposure', formatRiskPercent(g('OpenExposurePercent'))],
+    ['Max Drawdown', formatRiskPercent(g('MaxDrawdownPercent'))]
   ]
   statItems.forEach((item,i)=>{
     const x=margin + (i%2)*(cardW+gap)
@@ -403,12 +406,12 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   drawCanvasRoundRect(ctx,margin,y,contentWidth,summaryBoxH,24,true)
   ctx.fillStyle='#7efcc6'
   ctx.font='700 30px Arial'
-  ctx.fillText('Weekly Summary',margin+28,y+42)
+  ctx.fillText(isMonthly?'Monthly Summary':'Weekly Summary',margin+28,y+42)
   const summaryLines=[
-    `Weekly: ${stats.weeklyPips ?? 0} pips | Growth: ${formatPercent(stats.weeklyGainPercent)}`,
-    `Win Rate: ${stats.weeklyWinRate ?? stats.winRate ?? 0}% | Wins/Losses: ${stats.weeklyWins ?? stats.wins ?? 0}/${stats.weeklyLosses ?? stats.losses ?? 0}`,
-    `Avg Risk: ${formatRiskPercent(stats.weeklyAverageRiskPercent ?? 0)} | Max Risk: ${formatRiskPercent(stats.weeklyMaxRiskPercent ?? 0)}`,
-    `Open Exposure: ${formatRiskPercent(stats.weeklyOpenExposurePercent ?? 0)} | Max Drawdown: ${formatRiskPercent(stats.weeklyMaxDrawdownPercent ?? 0)}`,
+    `${isMonthly?'Monthly':'Weekly'}: ${g('Pips')} pips | Growth: ${formatPercent(g('GainPercent'))}`,
+    `Win Rate: ${g('WinRate', stats.winRate ?? 0)}% | Wins/Losses: ${g('Wins', stats.wins ?? 0)}/${g('Losses', stats.losses ?? 0)}`,
+    `Avg Risk: ${formatRiskPercent(g('AverageRiskPercent'))} | Max Risk: ${formatRiskPercent(g('MaxRiskPercent'))}`,
+    `Open Exposure: ${formatRiskPercent(g('OpenExposurePercent'))} | Max Drawdown: ${formatRiskPercent(g('MaxDrawdownPercent'))}`,
     `Risk management first. Trade with discipline.`
   ].slice(0,preset.summaryLines)
   ctx.fillStyle='#dfe7f5'
@@ -419,7 +422,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
   drawCanvasRoundRect(ctx,margin,H-84,contentWidth,56,18,true)
   ctx.fillStyle='#e9eef8'
   ctx.font='22px Arial'
-  ctx.fillText('1000PIPS • Premium Weekly Performance',margin+22,H-48)
+  ctx.fillText(isMonthly?'1000PIPS • Premium Monthly Performance':'1000PIPS • Premium Weekly Performance',margin+22,H-48)
   ctx.textAlign='right'
   ctx.fillStyle='#8ea0bd'
   ctx.fillText('Trade with proper risk management',W-margin-20,H-48)
@@ -427,7 +430,7 @@ function downloadWeeklyPerformancePoster(report,trades=[],format='portrait'){
 
   const link=document.createElement('a')
   link.href=canvas.toDataURL('image/png')
-  link.download=`1000pips-weekly-performance-${preset.label}-${new Date().toISOString().slice(0,10)}.png`
+  link.download=`1000pips-${pfx}-performance-${preset.label}-${new Date().toISOString().slice(0,10)}.png`
   link.click()
 }
 function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=false}){
@@ -492,7 +495,7 @@ function WeeklyPerformanceStudio({report,trades=[],showActions=true,compact=fals
       <h4>Report Summary</h4>
       <pre>{buildWeeklyReportText(normalizedReport,trades)}</pre>
     </div>
-    {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'square')}>Download Instagram Square</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'portrait')}>Download Telegram Portrait</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'status')}>Download WhatsApp Status</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
+    {showActions && <div className="weeklyPosterActions"><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'square',isMonthly?'Monthly':'Weekly')}>Download Instagram Square</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'portrait',isMonthly?'Monthly':'Weekly')}>Download Telegram Portrait</button><button onClick={()=>downloadWeeklyPerformancePoster(normalizedReport,trades,'status',isMonthly?'Monthly':'Weekly')}>Download WhatsApp Status</button><button onClick={()=>copyTextToClipboard(buildWeeklyReportText(normalizedReport,trades))}>Copy Report Text</button></div>}
   </div>
 }
 
@@ -1358,6 +1361,170 @@ function AnalysisCard({post}){
   </div>
 }
 function AnalysisPage(){ const[posts,setPosts]=useState([]),[msg,setMsg]=useState(''); useEffect(()=>{ load() },[]); async function load(){ try{ setPosts(await api('/api/analysis/public')) }catch(e){ setMsg(e.message) } } return <section className="section"><p className="green">DAILY MARKET ANALYSIS</p><h2>Gold, Forex, Crypto & Indices Breakdown</h2><button className="refresh" onClick={load}>Refresh Analysis</button>{msg&&<p className="error">{msg}</p>}<div className="weeklyAutoNotice"><strong>Daily Analysis Auto Display:</strong> Showing this week and last week analysis only.</div><div className="analysisGrid">{posts.length===0&&<p>No public analysis posted yet.</p>}{posts.length>0&&visibleWeeklyAnalysis(posts).length===0&&<p>No public analysis from this week or last week.</p>}{visibleWeeklyAnalysis(posts).map(post=><AnalysisCard key={post._id} post={post}/> )}</div></section> }
+function rangeToReportStats(range, periodType){
+  const p = String(periodType).toLowerCase()==='monthly' ? 'monthly' : 'weekly'
+  return {
+    [`${p}Pips`]: range.pips ?? 0,
+    [`${p}GainPercent`]: range.growthPercent ?? 0,
+    [`${p}WinRate`]: range.winRate ?? 0,
+    [`${p}Wins`]: range.wins ?? 0,
+    [`${p}Losses`]: range.losses ?? 0,
+    [`${p}ClosedTrades`]: range.closedTrades ?? 0,
+    [`${p}OpenTrades`]: range.openTrades ?? 0,
+    [`${p}AverageRiskPercent`]: range.avgRisk ?? 0,
+    [`${p}MaxRiskPercent`]: range.maxRisk ?? 0,
+    [`${p}OpenExposurePercent`]: range.exposure ?? 0,
+    [`${p}MaxDrawdownPercent`]: range.maxDD ?? 0,
+    [`${p}WeekBreakdown`]: []
+  }
+}
+function StatusPill({ok}){ return <span className={ok?'statusPillOk':'statusPillBad'}>{ok?'OK':'MISSING'}</span> }
+function PerformanceToolsPanel(){
+  const [msg,setMsg]=useState(''), [loading,setLoading]=useState(false)
+  const [trades,setTrades]=useState([])
+  const [weeklyReport,setWeeklyReport]=useState(null)
+  const [monthlyReport,setMonthlyReport]=useState(null)
+  const [status,setStatus]=useState(null)
+  const [timelineYear,setTimelineYear]=useState(new Date().getFullYear())
+  const [timeline,setTimeline]=useState(null)
+  const [recovery,setRecovery]=useState({ periodType:'Weekly', week:new Date().toISOString().slice(0,10), month:String(new Date().getMonth()+1), year:String(new Date().getFullYear()) })
+  const [recoveryReport,setRecoveryReport]=useState(null)
+
+  useEffect(()=>{ loadStatus(); loadTimeline(); api('/api/vip/trades').then(setTrades).catch(()=>{}) },[])
+
+  function showMsg(text){ setMsg(text); setTimeout(()=>setMsg(''),6000) }
+
+  async function loadStatus(){ try{ setStatus(await api('/api/admin/performance/status')) }catch(e){ showMsg(e.message) } }
+  async function loadTimeline(year=timelineYear){ try{ setTimeline(await api(`/api/admin/performance/timeline?year=${year}`)) }catch(e){ showMsg(e.message) } }
+
+  async function previewWeekly(){ setLoading(true); try{ const d=await api('/api/admin/performance/weekly/preview'); setWeeklyReport({ period:'Weekly', title:`Weekly Performance Report (${d.label})`, createdAt:new Date(), reportText:d.reportText, stats:d.stats }); showMsg('Weekly report generated (preview only, not saved).') }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+  async function generateWeekly(){ setLoading(true); try{ const d=await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period:'Weekly'})}); setWeeklyReport(d.report); showMsg('Weekly report generated and saved to archive.'); await loadStatus() }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+  async function sendWeeklyTelegram(){ setLoading(true); try{ await api('/api/admin/report/send-telegram',{method:'POST'}); showMsg('Weekly report sent to Telegram.') }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+
+  async function previewMonthly(){ setLoading(true); try{ const d=await api('/api/admin/performance/monthly/preview'); setMonthlyReport({ period:'Monthly', title:`Monthly Performance Report (${d.label})`, createdAt:new Date(), reportText:d.reportText, stats:d.stats }); showMsg('Monthly report generated (preview only, not saved).') }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+  async function generateMonthly(){ setLoading(true); try{ const d=await api('/api/admin/reports/archive-current',{method:'POST',body:JSON.stringify({period:'Monthly'})}); setMonthlyReport(d.report); showMsg('Monthly report generated and saved to archive.'); await loadStatus(); await loadTimeline() }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+  async function sendMonthlyTelegram(){ setLoading(true); try{ await api('/api/admin/performance/monthly/send-telegram',{method:'POST'}); showMsg('Monthly report sent to Telegram.') }catch(e){ showMsg(e.message) } finally{ setLoading(false) } }
+
+  async function runRecovery(action){
+    setLoading(true)
+    try{
+      const body={ action, periodType:recovery.periodType, year:Number(recovery.year) }
+      if(recovery.periodType==='Monthly') body.month=Number(recovery.month)
+      else body.week=recovery.week
+      const d=await api('/api/admin/performance/recover',{method:'POST',body:JSON.stringify(body)})
+      if(action==='preview' || action==='generate'){
+        setRecoveryReport({ period:d.periodType, title:`${d.periodType} Performance Report (${d.label})`, createdAt:new Date(), reportText:d.reportText, stats:rangeToReportStats(d.range,d.periodType) })
+        showMsg(`${d.periodType} report for ${d.label} rebuilt from trade history (preview only).`)
+      }else if(action==='save'){
+        setRecoveryReport(d.report)
+        showMsg(d.message)
+        await loadStatus(); await loadTimeline()
+      }else if(action==='telegram'){
+        showMsg(d.message)
+      }
+    }catch(e){ showMsg(e.message) } finally{ setLoading(false) }
+  }
+
+  async function recalculateAll(){
+    if(!window.confirm('This deletes ALL archived reports and rebuilds every weekly and monthly report from actual trade history. Continue?')) return
+    setLoading(true)
+    try{
+      const d=await api('/api/admin/performance/recalculate-all',{method:'POST'})
+      showMsg(`${d.message} (${d.weeklyCreated} weekly, ${d.monthlyCreated} monthly)`)
+      await loadStatus(); await loadTimeline()
+    }catch(e){ showMsg(e.message) } finally{ setLoading(false) }
+  }
+
+  return <div id="admin-performance" className="adminBox full performanceToolsPanel">
+    <h3>Performance Engine</h3>
+    {msg && <p className={msg.toLowerCase().includes('error')||msg.toLowerCase().includes('cannot')||msg.toLowerCase().includes('missing')?'error':'success'}>{msg}</p>}
+
+    <div className="performanceStatusBox">
+      <h4>System Status</h4>
+      {!status && <p>Loading status...</p>}
+      {status && <div className="performanceStatusGrid">
+        <div><span>Weekly Archive</span><StatusPill ok={status.weeklyArchiveOk}/></div>
+        <div><span>Monthly Archive</span><StatusPill ok={status.monthlyArchiveOk}/></div>
+        <div><span>Reports Archived</span><strong>{status.reportsArchived}</strong></div>
+        <div><span>Last Weekly Archive</span><strong>{status.lastWeeklyArchive?formatDate(status.lastWeeklyArchive):'None'}</strong></div>
+        <div><span>Last Monthly Archive</span><strong>{status.lastMonthlyArchive?formatDate(status.lastMonthlyArchive):'None'}</strong></div>
+      </div>}
+      <button onClick={loadStatus} disabled={loading}>Refresh Status</button>
+    </div>
+
+    <div className="performanceToolsGrid">
+      <div className="performanceToolCard">
+        <h4>Weekly</h4>
+        <div className="rowBtns wrap">
+          <button onClick={generateWeekly} disabled={loading}>Generate Weekly Report</button>
+          <button onClick={previewWeekly} disabled={loading}>Preview Weekly Report</button>
+          <button onClick={()=>weeklyReport?downloadWeeklyPerformancePoster(weeklyReport,trades,'portrait','Weekly'):showMsg('Generate or preview a weekly report first.')} disabled={loading}>Download Telegram Poster</button>
+          <button onClick={sendWeeklyTelegram} disabled={loading}>Send Telegram Report</button>
+        </div>
+        {weeklyReport && <WeeklyPerformanceStudio report={weeklyReport} trades={trades} showActions={true} compact={true}/>}
+      </div>
+
+      <div className="performanceToolCard">
+        <h4>Monthly</h4>
+        <div className="rowBtns wrap">
+          <button onClick={generateMonthly} disabled={loading}>Generate Monthly Report</button>
+          <button onClick={previewMonthly} disabled={loading}>Preview Monthly Report</button>
+          <button onClick={()=>monthlyReport?downloadWeeklyPerformancePoster(monthlyReport,trades,'portrait','Monthly'):showMsg('Generate or preview a monthly report first.')} disabled={loading}>Download Telegram Poster</button>
+          <button onClick={sendMonthlyTelegram} disabled={loading}>Send Telegram Report</button>
+        </div>
+        {monthlyReport && <WeeklyPerformanceStudio report={monthlyReport} trades={trades} showActions={true} compact={true}/>}
+      </div>
+    </div>
+
+    <div className="performanceToolCard full">
+      <h4>Historical Recovery</h4>
+      <p>Rebuild any previous week or month directly from actual trade records (createdAt / updatedAt / closedAt). Cancelled orders are always excluded from wins, losses, growth and pips.</p>
+      <div className="form compact recoveryForm">
+        <select value={recovery.periodType} onChange={e=>setRecovery({...recovery,periodType:e.target.value})}>
+          <option value="Weekly">Recover Weekly Report</option>
+          <option value="Monthly">Recover Monthly Report</option>
+        </select>
+        {recovery.periodType==='Weekly'
+          ? <input type="date" value={recovery.week} onChange={e=>setRecovery({...recovery,week:e.target.value})}/>
+          : <>
+            <select value={recovery.month} onChange={e=>setRecovery({...recovery,month:e.target.value})}>
+              {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m,i)=><option key={m} value={String(i+1)}>{m}</option>)}
+            </select>
+            <input type="number" placeholder="Year" value={recovery.year} onChange={e=>setRecovery({...recovery,year:e.target.value})}/>
+          </>}
+        <div className="rowBtns wrap">
+          <button onClick={()=>runRecovery('preview')} disabled={loading}>Preview</button>
+          <button onClick={()=>runRecovery('generate')} disabled={loading}>Generate</button>
+          <button onClick={()=>runRecovery('save')} disabled={loading}>Save Archive</button>
+          <button onClick={()=>runRecovery('telegram')} disabled={loading}>Send Telegram</button>
+        </div>
+      </div>
+      {recoveryReport && <>
+        <WeeklyPerformanceStudio report={recoveryReport} trades={trades} showActions={true} compact={true}/>
+      </>}
+    </div>
+
+    <div className="performanceToolCard full">
+      <h4>Rebuild All Reports</h4>
+      <p>Deletes every archived report and recalculates all weekly and monthly reports from actual trade history. Use this if data ever looks out of sync.</p>
+      <button className="dangerDeleteBtn" onClick={recalculateAll} disabled={loading}>Recalculate All Reports</button>
+    </div>
+
+    <div className="performanceToolCard full">
+      <h4>Monthly Performance Timeline</h4>
+      <div className="rowBtns">
+        <input type="number" value={timelineYear} onChange={e=>setTimelineYear(e.target.value)}/>
+        <button onClick={()=>loadTimeline(timelineYear)} disabled={loading}>Load Timeline</button>
+      </div>
+      {timeline && <div className="performanceTimeline">
+        {timeline.months.map(m=><div key={m.month} className={`timelineMonth ${m.status}`}>
+          <span>{m.label}</span>
+          <strong>{m.status==='none' ? '—' : m.status==='running' ? 'Running' : formatPercent(m.growthPercent)}</strong>
+        </div>)}
+      </div>}
+    </div>
+  </div>
+}
 function Admin({user,setPage}){
   const [users,setUsers]=useState([]),[payments,setPayments]=useState([]),[trades,setTrades]=useState([]),[textSignals,setTextSignals]=useState([]),[report,setReport]=useState(null),[reports,setReports]=useState([]),[analysis,setAnalysis]=useState([]),[adminReferrals,setAdminReferrals]=useState([]),[msg,setMsg]=useState(''),[viewer,setViewer]=useState(null),[renewPlan,setRenewPlan]=useState('1 Month VIP - $45')
   const [signal,setSignal]=useState({title:'XAUUSD BUY Setup',message:'BUY XAUUSD\nEntry: 3350\nSL: 3340\nTP1: 3370\nTP2: 3385',sendTelegram:true})
@@ -1430,7 +1597,7 @@ ${t.notes}`,sendTelegram:true})
     ['notvip','Not VIP',nonVipMembers.length]
   ]
   const adminTabs=[
-    ['overview','Overview'],['signals','Signals & Trades'],['analysis','Analysis Blog'],['members','Payments & Users'],['reports','Reports'],['proofs','Proofs'],['marketing','Coupons & Announcements'],['referrals','Referrals']
+    ['overview','Overview'],['signals','Signals & Trades'],['analysis','Analysis Blog'],['members','Payments & Users'],['performance','Performance Tools'],['reports','Reports'],['proofs','Proofs'],['marketing','Coupons & Announcements'],['referrals','Referrals']
   ]
   function showAdminTab(key){ setAdminView(key); setTimeout(()=>document.getElementById(`admin-${key}`)?.scrollIntoView({behavior:'smooth',block:'start'}),50) }
   function adminItems(items,key,limit=10){ const list=Array.isArray(items)?items:[]; return showAllAdmin[key]?list:list.slice(0,limit) }
@@ -1650,6 +1817,8 @@ ${t.notes}`,sendTelegram:true})
       </div>
 
       <div className="adminBox full"><h3>Published Analysis Posts</h3><AdminFilterBar search={adminAnalysisSearch} setSearch={setAdminAnalysisSearch} filter={adminAnalysisFilter} setFilter={setAdminAnalysisFilter} placeholder="Search title, market, bias..." total={analysis.length} shown={filteredAdminAnalysis.length} filters={[['all','All Posts'],['public','Public'],['vip','VIP']]}/>{filteredAdminAnalysis.length===0&&<p>No analysis posts found.</p>}<AdminShowToggle itemsKey="analysis" total={filteredAdminAnalysis.length}/>{adminItems(filteredAdminAnalysis,'analysis').map(post=>{ const latest=Array.isArray(post.updates)&&post.updates.length?post.updates[0]:null; return <div key={post._id} className="adminRow"><strong>{post.title}</strong><p>{post.market} · {post.bias} · {post.visibility}</p>{latest&&<div className={`analysisLatestUpdate adminMini ${latest.status}`}><strong>{analysisUpdateStatusIcon(latest.status)} {analysisUpdateStatusLabel(latest.status)}</strong><p>{latest.comment}</p><small>{formatDateTime(latest.createdAt)}</small></div>}{post.chartImageData&&<img className="miniChart" src={imgSrcFromPost(post)} alt={post.title}/>}<div className="rowBtns"><button onClick={()=>setActiveAnalysisUpdate(activeAnalysisUpdate===post._id?null:post._id)}>Add Update</button><button onClick={()=>deleteAnalysis(post._id)}>Delete</button></div>{activeAnalysisUpdate===post._id&&<form onSubmit={e=>postAnalysisUpdate(e,post._id)} className="form compact analysisUpdateForm"><select value={analysisUpdateForm.status} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,status:e.target.value})}><option value="running">Running According To Analysis</option><option value="target_hit">Target Hit</option><option value="invalidated">Invalidated By News / Market Change</option><option value="failed">Analysis Failed</option><option value="updated">General Update</option></select><textarea rows="4" placeholder="Write update comment for members" value={analysisUpdateForm.comment} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,comment:e.target.value})}/><select value={analysisUpdateForm.visibility} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,visibility:e.target.value})}><option value="public">Public Update</option><option value="vip">VIP Only Update</option></select><label className="check"><input type="checkbox" checked={analysisUpdateForm.sendTelegram} onChange={e=>setAnalysisUpdateForm({...analysisUpdateForm,sendTelegram:e.target.checked})}/> Send update to Telegram</label><div className="rowBtns"><button>Add Analysis Update</button><button type="button" onClick={()=>setActiveAnalysisUpdate(null)}>Cancel</button></div></form>}{Array.isArray(post.updates)&&post.updates.length>0&&<div className="analysisUpdateTimeline adminTimeline"><h4>Update History</h4>{post.updates.map((u,i)=><div className={`analysisUpdateItem ${u.status}`} key={u._id||i}><span>{analysisUpdateStatusIcon(u.status)}</span><div><strong>{analysisUpdateStatusLabel(u.status)}</strong><p>{u.comment}</p><small>{formatDateTime(u.createdAt)} · {u.visibility}</small></div></div>)}</div>}</div>})}</div>
+      <PerformanceToolsPanel/>
+
       <div id="admin-reports" className="adminBox full"><h3>Archived Reports</h3><AdminFilterBar search={adminReportSearch} setSearch={setAdminReportSearch} filter={adminReportFilter} setFilter={setAdminReportFilter} placeholder="Search report title, period, text..." total={reports.length} shown={filteredAdminReports.length} filters={[['all','All Reports'],['weekly','Weekly'],['monthly','Monthly']]}/>{filteredAdminReports.length===0&&<p>No archived reports found.</p>}<AdminShowToggle itemsKey="reports" total={filteredAdminReports.length}/>{adminItems(filteredAdminReports,'reports').map(r=><div key={r._id} className="adminRow"><strong>{r.title}</strong><p>{r.period} | Pips: {r.totalPips} | Win Rate: {r.winRate}%</p><p>Created: {formatDateTime(r.createdAt)}</p><div className="rowBtns"><button className="dangerDeleteBtn" onClick={()=>deleteArchiveReport(r._id)}>Delete Report</button></div></div>)}</div>
     </div>
   </section>
